@@ -13,7 +13,6 @@ const Register: React.FC = () => {
       <div className="absolute bottom-[20%] left-[5%] w-48 h-48 border border-slate-800/10 rounded-full pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full -z-20 pointer-events-none" />
 
-      <Navbar />
 
       <main className="flex-1 flex items-center justify-center p-6 mt-20 relative z-10">
         <div className="w-full max-w-lg">

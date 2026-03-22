@@ -65,9 +65,19 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  const getClipSize = () => {
+    switch (size) {
+      case 'sm': return 8;
+      case 'md': return 12;
+      case 'lg': return 16;
+      default: return 12;
+    }
+  };
+
+  const clipSize = getClipSize();
   const clippedStyle = clipped
     ? {
-        clipPath: 'polygon(0% 0%, calc(100% - 12px) 0%, 100% 12px, 100% 100%, 12px 100%, 0% calc(100% - 12px))',
+        clipPath: `polygon(0% 0%, calc(100% - ${clipSize}px) 0%, 100% ${clipSize}px, 100% 100%, ${clipSize}px 100%, 0% calc(100% - ${clipSize}px))`,
       }
     : {};
 
@@ -86,8 +96,15 @@ export const Button: React.FC<ButtonProps> = ({
       }}
       {...props}
     >
+      {/* Subtle glow for outline variant */}
+      {variant === 'outline' && (
+        <div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-primary -z-10"
+          style={clippedStyle}
+        />
+      )}
       {leftIcon && <span className="mr-2">{leftIcon}</span>}
-      {children}
+      <span className="relative z-10">{children}</span>
       {rightIcon && <span className="ml-2">{rightIcon}</span>}
     </button>
   );
