@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "Orbitron";
+  src: url("./assets/fonts/Orbitron/Orbitron-VariableFont_wght.ttf") format("truetype");
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Unbounded";
+  src: url("./assets/fonts/Unbounded-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+
+@theme {
+  --color-primary: #6f26ff;
+  --color-background: #11111b;
+
+  --font-header: "Orbitron", sans-serif;
+  --font-body: "Unbounded", sans-serif;
+
+  --spacing-small: 0.25rem;
+  --spacing-medium: 0.5rem;
+  --spacing-large: 1rem;
+
+  --radius-default: 8px;
+  --radius-card: 12px;
+  --radius-button: 8px;
+}
+
+:root {
+  background-color: var(--color-background);
+  color: white;
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-header);
+}
