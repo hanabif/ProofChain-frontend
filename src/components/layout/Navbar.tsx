@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import logo from '../../assets/images/logo.svg';
 
 export const Navbar: React.FC = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export const Navbar: React.FC = () => {
       `}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 cursor-pointer group">
+      <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
         <div className="relative">
           <img src={logo} alt="ProofChain Logo" className="w-8 h-8 object-contain" />
           {!isScrolled && (
@@ -38,10 +40,20 @@ export const Navbar: React.FC = () => {
 
       {/* Nav Actions */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" className="text-[10px] tracking-widest bg-white/5 border-white/10 hover:border-primary/50">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-[10px] tracking-widest bg-white/5 border-white/10 hover:border-primary/50"
+          onClick={() => navigate('/login')}
+        >
           Login
         </Button>
-        <Button variant="primary" size="sm" className="text-[10px] tracking-widest">
+        <Button 
+          variant="primary" 
+          size="sm" 
+          className="text-[10px] tracking-widest"
+          onClick={() => navigate('/register')}
+        >
           Register now
         </Button>
       </div>
