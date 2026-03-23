@@ -1,8 +1,10 @@
 import React from 'react';
 import { CheckCircle2, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ExploreCardProps {
   asset: {
+    id?: string | number;
     title: string;
     desc: string;
     owner: string;
@@ -11,8 +13,13 @@ interface ExploreCardProps {
 }
 
 export const ExploreCard: React.FC<ExploreCardProps> = ({ asset }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex flex-col bg-[#11111B]/80 backdrop-blur-md border border-white/5 rounded-[32px] p-7 transition-all duration-300 hover:bg-[#11111B] hover:border-white/10 hover:-translate-y-2 shadow-xl group relative overflow-hidden z-20 cursor-pointer">
+    <div 
+      onClick={() => navigate(`/file/${asset.id || 1}`)}
+      className="flex flex-col bg-[#11111B]/80 backdrop-blur-md border border-white/5 rounded-[32px] p-7 transition-all duration-300 hover:bg-[#11111B] hover:border-white/10 hover:-translate-y-2 shadow-xl group relative overflow-hidden z-20 cursor-pointer"
+    >
       
       {/* Badge */}
       <div className="inline-flex items-center gap-2 bg-[#1A2E22] border border-green-500/20 px-3 py-1.5 rounded-full w-fit mb-6">

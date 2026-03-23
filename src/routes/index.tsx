@@ -4,6 +4,7 @@ import LandingPage from '../pages/LandingPage';
 import Register from '../pages/Register';
 import Login from '../pages/Login';
 import Explore from '../pages/Explore';
+import FileDetail from '../pages/FileDetail';
 import MainLayout from '../components/layout/MainLayout';
 
 export default function AppRoutes() {
@@ -13,6 +14,7 @@ export default function AppRoutes() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/file/:id" element={<FileDetail />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>
