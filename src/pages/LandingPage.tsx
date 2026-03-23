@@ -82,6 +82,7 @@ const LandingPage: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
+                  onClick={() => navigate('/explore')}
                 >
                   Explore Files
                 </Button>
