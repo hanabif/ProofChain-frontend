@@ -1,8 +1,11 @@
 import React from 'react';
 import { FileText, CheckCircle2, Copy, Lock, Link, Database } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 const FileDetail: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#0B0B14] text-white pt-32 pb-24 px-6 md:px-12 lg:px-24">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -70,8 +73,14 @@ const FileDetail: React.FC = () => {
               <LicenseFeature text="Verified proof of authenticity for legal use" />
             </ul>
 
-            <Button variant="primary" size="lg" fullWidth className="py-5 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]">
-              License this work
+            <Button 
+              variant="primary" 
+              size="lg" 
+              fullWidth 
+              className="py-5 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
+              onClick={() => navigate('/payment/1')}
+            >
+              Request License
             </Button>
             
             <div className="flex flex-col items-center mt-6 gap-2">
