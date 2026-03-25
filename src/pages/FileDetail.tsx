@@ -1,10 +1,20 @@
-import React from 'react';
-import { FileText, CheckCircle2, Copy, Lock, Link, Database } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, CheckCircle2, Copy, Lock, Link, Database, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
 const FileDetail: React.FC = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [requestDescription, setRequestDescription] = useState('');
+
+  const handleSendRequest = () => {
+    // In a real app, this would send the request to the backend
+    console.log('Sending license request:', requestDescription);
+    setIsModalOpen(false);
+    setRequestDescription('');
+    // Optionally show a success toast here
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0B14] text-white pt-32 pb-24 px-6 md:px-12 lg:px-24">
@@ -78,7 +88,7 @@ const FileDetail: React.FC = () => {
               size="lg" 
               fullWidth 
               className="py-5 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
-              onClick={() => navigate('/payment/1')}
+              onClick={() => setIsModalOpen(true)}
             >
               Request License
             </Button>
@@ -118,6 +128,44 @@ const FileDetail: React.FC = () => {
 
         </div>
       </div>
+
+      {/* License Request Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#0B0B14] border border-white/5 rounded-[32px] p-8 md:p-12 relative shadow-[0_0_50px_rgba(0,0,0,1)] animate-in zoom-in-95 duration-300">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors p-2"
+            >
+              <X className="w-7 h-7" />
+            </button>
+
+            <h2 className="text-sm md:text-base font-header font-black text-[#B066FE] uppercase tracking-[0.2em] mb-8 pr-12">
+              Describe how you plan to use this license
+            </h2>
+
+            <div className="relative group">
+              <textarea
+                value={requestDescription}
+                onChange={(e) => setRequestDescription(e.target.value)}
+                placeholder="I plan to user this license ...."
+                className="w-full h-64 bg-[#050505] border border-white/10 rounded-3xl p-8 text-slate-300 font-body text-base placeholder-slate-700 focus:outline-none focus:border-[#B066FE]/50 transition-all shadow-inner resize-none"
+              />
+            </div>
+
+            <div className="flex justify-center mt-10">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                className="min-w-[280px] py-5 text-sm font-black tracking-widest shadow-[0_0_30px_rgba(111,38,255,0.3)] hover:shadow-[0_0_40px_rgba(111,38,255,0.5)]"
+                onClick={handleSendRequest}
+              >
+                Send Request
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

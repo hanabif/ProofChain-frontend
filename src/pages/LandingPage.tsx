@@ -41,6 +41,16 @@ const LandingPage: React.FC = () => {
 
         {/* Main Hero Wrapper to prevent cropping of decorative stars by clip-path */}
         <div className="relative w-full max-w-7xl">
+          {/* Top Right Header Buttons - Outside Hero Card to avoid clip-path */}
+          <div className="absolute top-6 right-12 hidden md:flex items-center gap-[15px] z-30">
+             <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+                Login
+             </Button>
+             <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
+                Register now
+             </Button>
+          </div>
+
           {/* Main Hero Card */}
           <div 
             className="w-full bg-[#11111B]/95 backdrop-blur-[60px] border border-white/20 shadow-2xl flex flex-col lg:flex-row items-center gap-4 min-h-[640px]"
@@ -52,15 +62,6 @@ const LandingPage: React.FC = () => {
             <div className="absolute top-6 left-12 flex items-center gap-3">
                <img src={logo} className="w-8 h-8" alt="ProofChain Logo" />
                <span className="text-xl font-header font-bold text-white tracking-widest uppercase">ProofChain</span>
-            </div>
-            
-            <div className="absolute top-8 right-12 hidden md:flex items-center gap-4">
-               <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
-                  LOGIN
-               </Button>
-               <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
-                  Register now
-               </Button>
             </div>
 
             {/* Left Content */}
@@ -75,9 +76,9 @@ const LandingPage: React.FC = () => {
                 <Button 
                   variant="primary" 
                   size="lg"
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/create-license')}
                 >
-                  Register File
+                  Create License
                 </Button>
                 <Button 
                   variant="outline" 
@@ -119,7 +120,7 @@ const LandingPage: React.FC = () => {
           {/* Horizontal Staggered Layout */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start max-w-6xl mx-auto">
             <div className="flex justify-center md:justify-start">
-               <WorkCard icon={uploadIcon} title="Upload Document" desc="Select and upload the document to begin the protection process." delay="0s" />
+               <WorkCard icon={uploadIcon} title="Create a license" desc="Create the license you want to attach your documents to." delay="0s" />
             </div>
             <div className="flex justify-center md:pt-32 scale-95 opacity-90 transition-all duration-500 hover:scale-100 hover:opacity-100">
                <WorkCard icon={hashIcon} title="Generate Hash" desc="We create a unique cryptographic fingerprint of your file." delay="0.2s" side="right" />
@@ -160,7 +161,7 @@ const LandingPage: React.FC = () => {
             {[
               { icon: ownerKeyIcon, title: "Proof of Ownership", desc: "Indisputable proof that you are the creator and owner of the asset." },
               { icon: statusIcon, title: "Instant Verification", desc: "Verify any file's authenticity in seconds with our lookup tool." },
-              { icon: qrIcon, title: "QR Licensing", desc: "Generate secure QR codes for easy sharing and licensing verification." }
+              { icon: qrIcon, title: "License purchasing", desc: "Buy licenses by sending requests to license owners." }
             ].map((feature, i) => (
               <div 
                 key={i} 

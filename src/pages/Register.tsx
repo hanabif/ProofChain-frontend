@@ -2,7 +2,7 @@ import React from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { User, Mail, Phone, Lock } from 'lucide-react';
+import { User, Mail, Phone, Lock, Calendar } from 'lucide-react';
 
 const Register: React.FC = () => {
   return (
@@ -31,33 +31,59 @@ const Register: React.FC = () => {
             </div>
 
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <Input 
-                label="Full Name" 
-                placeholder="Satoshi Nakamoto" 
-                icon={<User size={18} />}
-              />
-              <Input 
-                label="Email Address" 
-                placeholder="identity@proofchain.io" 
-                icon={<Mail size={18} />}
-              />
-              <Input 
-                label="Phone Number" 
-                placeholder="+1 (555) 000-0000" 
-                icon={<Phone size={18} />}
-              />
-              <Input 
-                label="Password" 
-                type="password"
-                placeholder="************" 
-                icon={<Lock size={18} />}
-              />
-              <Input 
-                label="Confirm Password" 
-                type="password"
-                placeholder="************" 
-                icon={<Lock size={18} />}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                  label="First Name" 
+                  placeholder="Satoshi" 
+                  icon={<User size={18} />}
+                />
+                <Input 
+                  label="Last Name" 
+                  placeholder="Nakamoto" 
+                  icon={<User size={18} />}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                  label="Username" 
+                  placeholder="satoshin" 
+                  icon={<User size={18} />}
+                />
+                <Input 
+                  label="Email Address" 
+                  placeholder="identity@proofchain.io" 
+                  icon={<Mail size={18} />}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                  label="Date of Birth" 
+                  type="date"
+                  icon={<Calendar size={18} />}
+                />
+                <Input 
+                  label="Phone Number" 
+                  placeholder="+1 (555) 000-0000" 
+                  icon={<Phone size={18} />}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                  label="Password" 
+                  type="password"
+                  placeholder="************" 
+                  icon={<Lock size={18} />}
+                />
+                <Input 
+                  label="Confirm Password" 
+                  type="password"
+                  placeholder="************" 
+                  icon={<Lock size={18} />}
+                />
+              </div>
 
               <div className="pt-4 space-y-4 text-center">
                 <Button fullWidth size="lg">

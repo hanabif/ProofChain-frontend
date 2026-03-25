@@ -6,6 +6,7 @@ import Explore from '../pages/Explore';
 import FileDetail from '../pages/FileDetail';
 import CreatLicense from '../pages/CreatLicense';
 import AttachFile from '../pages/AttachFile';
+import DashboardOverview from '../pages/dashboard/DashboardOverview';
 import MainLayout from '../components/layout/MainLayout';
 
 export default function AppRoutes() {
@@ -20,6 +21,7 @@ export default function AppRoutes() {
           <Route path="/attach-file" element={<AttachFile />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard/overview" element={<DashboardOverview />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>

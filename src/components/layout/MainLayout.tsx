@@ -10,6 +10,11 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const isDashboard = location.pathname.startsWith('/dashboard');
+
+  if (isDashboard) {
+    return <main className="flex-1">{children}</main>;
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0B14] text-white flex flex-col">
