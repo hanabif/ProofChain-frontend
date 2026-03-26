@@ -7,6 +7,17 @@ import FileDetail from '../pages/FileDetail';
 import CreatLicense from '../pages/CreatLicense';
 import AttachFile from '../pages/AttachFile';
 import DashboardOverview from '../pages/dashboard/DashboardOverview';
+import VerifyDocument from '../pages/dashboard/VerifyDocument';
+import MyAssets from '../pages/dashboard/MyAssets';
+import AssetDetail from '../pages/dashboard/AssetDetail';
+import Licenses from '../pages/dashboard/Licenses';
+import LicenseAssets from '../pages/dashboard/LicenseAssets';
+import RequestLicense from '../pages/dashboard/RequestLicense';
+import EditLicense from '../pages/dashboard/EditLicense';
+
+
+
+
 import MainLayout from '../components/layout/MainLayout';
 
 export default function AppRoutes() {
@@ -22,6 +33,17 @@ export default function AppRoutes() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard/overview" element={<DashboardOverview />} />
+          <Route path="/dashboard/verify" element={<VerifyDocument />} />
+          <Route path="/dashboard/assets" element={<MyAssets />} />
+          <Route path="/dashboard/asset/:id" element={<AssetDetail />} />
+          <Route path="/dashboard/licenses" element={<Licenses />} />
+          <Route path="/dashboard/license/:id/assets" element={<LicenseAssets />} />
+          <Route path="/dashboard/license/:id/requests" element={<RequestLicense />} />
+          <Route path="/dashboard/license/:id/edit" element={<EditLicense />} />
+
+
+
+
         </Routes>
       </MainLayout>
     </BrowserRouter>

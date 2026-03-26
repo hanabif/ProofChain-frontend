@@ -1,5 +1,5 @@
-import React from 'react';
 import { Search, Bell } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 const DashboardNavbar: React.FC = () => {
   return (
@@ -18,10 +18,10 @@ const DashboardNavbar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-6 ml-6">
-        <button className="relative p-2.5 rounded-xl bg-[#ffffff0a] border border-[#ffffff10] hover:bg-[#ffffff15] hover:border-[#ffffff20] transition-all duration-300 group">
+        <Button variant="outline" className="relative !p-2.5 min-w-0" clipped={false}>
           <Bell className="h-6 w-6 text-[#ffffff60] group-hover:text-white transition-colors duration-300" />
           <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-[#11111b] animate-sparkle"></span>
-        </button>
+        </Button>
       </div>
     </div>
   );

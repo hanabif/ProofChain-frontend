@@ -1,5 +1,5 @@
-import React from 'react';
 import { CheckCircle, ShoppingCart, Share2 } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 const RecentActivity: React.FC = () => {
   const activities = [
@@ -36,9 +36,9 @@ const RecentActivity: React.FC = () => {
     <div className="p-8 bg-[#ffffff0a] border border-[#ffffff10] rounded-[32px] overflow-hidden relative group shadow-2xl">
       <div className="flex items-center justify-between mb-8">
         <h4 className="text-xs font-header tracking-[0.2em] text-[#ffffff40]">RECENT ACTIVITY</h4>
-        <button className="text-[10px] font-header tracking-widest text-primary hover:text-white transition-colors cursor-pointer border-b border-primary/30 hover:border-white">
+        <Button variant="ghost" size="sm" className="!text-[10px] tracking-widest text-primary hover:text-white" clipped={false}>
           EXPORT LEDGER
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-6">
