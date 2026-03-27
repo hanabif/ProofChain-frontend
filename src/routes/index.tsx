@@ -11,9 +11,14 @@ import VerifyDocument from '../pages/dashboard/VerifyDocument';
 import MyAssets from '../pages/dashboard/MyAssets';
 import AssetDetail from '../pages/dashboard/AssetDetail';
 import Licenses from '../pages/dashboard/Licenses';
+import Requests from '../pages/dashboard/Requests';
+import Transactions from '../pages/dashboard/Transactions';
+
 import LicenseAssets from '../pages/dashboard/LicenseAssets';
 import RequestLicense from '../pages/dashboard/RequestLicense';
 import EditLicense from '../pages/dashboard/EditLicense';
+import CreateLicenseDashboard from '../pages/dashboard/CreateLicenseDashboard';
+
 
 
 
@@ -37,9 +42,14 @@ export default function AppRoutes() {
           <Route path="/dashboard/assets" element={<MyAssets />} />
           <Route path="/dashboard/asset/:id" element={<AssetDetail />} />
           <Route path="/dashboard/licenses" element={<Licenses />} />
+          <Route path="/dashboard/requests" element={<Requests />} />
+          <Route path="/dashboard/transactions" element={<Transactions />} />
+
           <Route path="/dashboard/license/:id/assets" element={<LicenseAssets />} />
           <Route path="/dashboard/license/:id/requests" element={<RequestLicense />} />
           <Route path="/dashboard/license/:id/edit" element={<EditLicense />} />
+          <Route path="/dashboard/create-license" element={<CreateLicenseDashboard />} />
+
 
 
 

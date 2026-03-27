@@ -14,9 +14,11 @@ const OperationsTerminal: React.FC = () => {
             variant="primary" 
             fullWidth 
             leftIcon={<FileText className="w-5 h-5" />}
+            onClick={() => navigate('/dashboard/create-license')}
           >
             Create license
           </Button>
+
 
           <Button 
             variant="outline" 
