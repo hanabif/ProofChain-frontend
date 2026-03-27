@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import { Button } from '../../components/ui/Button';
@@ -12,6 +12,16 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLicense } from '../../hooks/licenses/useLicense';
 import { useUpdateLicense } from '../../hooks/licenses/useUpdateLicense';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const editLicenseSchema = z.object({
+  price: z.number().min(0, 'Price must be positive'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+});
+
+type EditLicenseFormValues = z.infer<typeof editLicenseSchema>;
 
 const EditLicense: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,24 +29,34 @@ const EditLicense: React.FC = () => {
   const { data: licenseData, isLoading, isError } = useLicense(id);
   const updateMutation = useUpdateLicense();
 
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(editLicenseSchema),
+    defaultValues: {
+      price: 0,
+      description: '',
+    }
+  });
 
   useEffect(() => {
     if (licenseData) {
-      setPrice(licenseData.price?.toString() ?? '');
-      setDescription(licenseData.description);
+      setValue('price', licenseData.price || 0);
+      setValue('description', licenseData.description || '');
     }
-  }, [licenseData]);
+  }, [licenseData, setValue]);
 
-  const handleSave = async () => {
+  const onFormSubmit = async (data: EditLicenseFormValues) => {
     if (!id) return;
     try {
       await updateMutation.mutateAsync({
         id,
         updates: {
-          price: Number(price) || 0,
-          description
+          price: data.price,
+          description: data.description
         }
       });
       navigate('/dashboard/licenses');
@@ -44,6 +64,8 @@ const EditLicense: React.FC = () => {
       console.error('Failed to update license:', error);
     }
   };
+
+  const isPersonal = licenseData?.type?.toLowerCase() === 'personal';
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
@@ -76,7 +98,7 @@ const EditLicense: React.FC = () => {
                 </p>
               </div>
 
-              <div className="max-w-4xl space-y-8">
+              <form className="max-w-4xl space-y-8" onSubmit={handleSubmit(onFormSubmit)}>
                 {/* Info Card */}
                 <div className="bg-[#161622]/40 border border-[#ffffff08] rounded-[40px] p-8 relative overflow-hidden group shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] -z-10"></div>
@@ -121,18 +143,26 @@ const EditLicense: React.FC = () => {
                     <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block">
                       License Price (ETH)
                     </label>
-                    <div className="relative group">
+                    <div className={`relative group ${isPersonal ? 'opacity-50' : ''}`}>
                       <input 
                         type="number" 
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                        step="0.01"
+                        {...register('price', { valueAsNumber: true })}
+                        disabled={isPersonal}
                         className="w-full bg-[#ffffff05] border border-[#ffffff08] rounded-[24px] py-5 px-8 text-xl font-header text-white focus:outline-none focus:border-primary/50 focus:bg-[#ffffff0a] transition-all"
                       />
                       <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-1.5 bg-[#00ff95]/10 border border-[#00ff95]/20 rounded-full">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff95]" />
-                        <span className="text-[9px] font-header tracking-widest text-[#00ff95] uppercase">Verified</span>
+                        <span className="text-[9px] font-header tracking-widest text-[#00ff95] uppercase">
+                          {isPersonal ? 'Fixed' : 'Verified'}
+                        </span>
                       </div>
                     </div>
+                    {errors.price && (
+                      <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic">
+                        {errors.price.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Description Field */}
@@ -141,11 +171,15 @@ const EditLicense: React.FC = () => {
                       License Description
                     </label>
                     <textarea 
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      {...register('description')}
                       rows={6}
-                      className="w-full bg-[#ffffff05] border border-[#ffffff08] rounded-[32px] p-8 text-sm font-body text-[#ffffff60] leading-relaxed focus:outline-none focus:border-primary/50 focus:bg-[#ffffff0a] transition-all resize-none"
+                      className={`w-full bg-[#ffffff05] border border-[#ffffff08] rounded-[32px] p-8 text-sm font-body text-[#ffffff60] leading-relaxed focus:outline-none focus:border-primary/50 focus:bg-[#ffffff0a] transition-all resize-none ${errors.description ? 'border-red-500/30' : ''}`}
                     />
+                    {errors.description && (
+                      <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic">
+                        {errors.description.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -154,9 +188,9 @@ const EditLicense: React.FC = () => {
                   <div className="relative group overflow-hidden rounded-[20px] active:scale-95 transition-transform">
                     <Button 
                       variant="primary" 
+                      type="submit"
                       className="!py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] relative z-10" 
                       clipped={true}
-                      onClick={handleSave}
                       disabled={updateMutation.isPending}
                     >
                       {updateMutation.isPending ? (
@@ -171,6 +205,7 @@ const EditLicense: React.FC = () => {
 
                   <Button 
                     variant="outline" 
+                    type="button"
                     className="!rounded-[20px] !py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] !border-white/10 hover:!bg-white/5" 
                     clipped={true}
                     onClick={() => navigate('/dashboard/licenses')}
@@ -178,7 +213,7 @@ const EditLicense: React.FC = () => {
                     Cancel
                   </Button>
                 </div>
-              </div>
+              </form>
             </>
           )}
         </div>

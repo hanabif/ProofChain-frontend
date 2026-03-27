@@ -1,31 +1,66 @@
-import React, { useState } from 'react';
-import { ChevronDown, Check, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, Check, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
 import { useCreateLicense } from '../../hooks/licenses/useCreateLicense';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
-type LicenseType = 'PERSONAL' | 'EXCLUSIVE' | 'NON-EXCLUSIVE';
+const licenseSchema = z.object({
+  type: z.enum(['personal', 'exclusive', 'non-exclusive']),
+  price: z.number().min(0, 'Price must be positive'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+}).refine(data => {
+  if (data.type === 'personal') return data.price === 0;
+  return true;
+}, {
+  message: "Personal licenses must have a price of 0",
+  path: ["price"]
+});
+
+type LicenseFormValues = z.infer<typeof licenseSchema>;
 
 interface LicenseCreationFormProps {
   isDashboard?: boolean;
 }
 
 const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard = false }) => {
-  const [licenseType, setLicenseType] = useState<LicenseType>('PERSONAL');
-  const [price, setPrice] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
   const createLicenseMutation = useCreateLicense();
 
-  const handleSubmit = async () => {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<LicenseFormValues>({
+    resolver: zodResolver(licenseSchema),
+    defaultValues: {
+      type: 'personal',
+      price: 0,
+      description: '',
+    }
+  });
+
+  const licenseType = watch('type');
+
+  useEffect(() => {
+    if (licenseType === 'personal') {
+      setValue('price', 0);
+    }
+  }, [licenseType, setValue]);
+
+  const onFormSubmit = async (data: LicenseFormValues) => {
     try {
       await createLicenseMutation.mutateAsync({
-        type: licenseType.toLowerCase() as any,
-        price: Number(price) || 0,
+        type: data.type as any,
+        price: data.price,
         status: 'active',
-        description: description,
+        description: data.description,
       });
       setShowSuccessModal(true);
     } catch (error) {
@@ -35,7 +70,6 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
 
   return (
     <div className={`w-full ${isDashboard ? '' : 'max-w-3xl mx-auto'}`}>
-      {/* Header Section (Only if not dashboard, or we can handle it separately) */}
       {!isDashboard && (
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-header font-black tracking-tighter mb-4 uppercase">
@@ -47,126 +81,122 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
         </div>
       )}
 
-      {/* Main Form Card */}
       <div className={`w-full bg-[#11111B] rounded-[32px] border border-white/5 p-8 md:p-12 shadow-2xl relative ${isDashboard ? 'bg-[#161622]/40' : ''}`}>
-        
-        {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-10">
+        <form className="relative z-10 flex flex-col gap-10" onSubmit={handleSubmit(onFormSubmit)}>
           
           {/* 1. License Type */}
           <div className="flex flex-col">
             <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-6">License Type</span>
             
-            {/* Dropdown Mimic -> Actual Dropdown */}
             <div className="relative mb-6">
               <div 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="w-full bg-[#050505] border border-white/5 rounded-full py-4 px-6 flex items-center justify-between cursor-pointer hover:border-white/10 transition-colors shadow-inner"
               >
-                <span className="text-sm font-body text-slate-200">
-                  {licenseType === 'PERSONAL' && 'Personal'}
-                  {licenseType === 'EXCLUSIVE' && 'Exclusive'}
-                  {licenseType === 'NON-EXCLUSIVE' && 'Non-Exclusive'}
+                <span className="text-sm font-body text-slate-200 capitalize">
+                  {licenseType}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-[#B066FE] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </div>
               
               {isDropdownOpen && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A112B] border border-white/10 rounded-2xl overflow-hidden z-50 shadow-2xl flex flex-col">
-                  {(['PERSONAL', 'EXCLUSIVE', 'NON-EXCLUSIVE'] as LicenseType[]).map((type) => (
+                  {(['personal', 'exclusive', 'non-exclusive'] as const).map((type) => (
                     <div 
                       key={type}
                       onClick={() => {
-                        setLicenseType(type);
+                        setValue('type', type);
                         setIsDropdownOpen(false);
                       }}
-                      className={`px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors font-body text-sm ${licenseType === type ? 'text-[#B066FE] bg-[#B066FE]/5' : 'text-slate-200'}`}
+                      className={`px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors font-body text-sm capitalize ${licenseType === type ? 'text-[#B066FE] bg-[#B066FE]/5' : 'text-slate-200'}`}
                     >
-                      {type === 'PERSONAL' && 'Personal'}
-                      {type === 'EXCLUSIVE' && 'Exclusive'}
-                      {type === 'NON-EXCLUSIVE' && 'Non-Exclusive'}
+                      {type}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Selection Pills */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <TypePill 
-                type="PERSONAL" 
                 title="PERSONAL" 
                 desc="Private use only" 
-                active={licenseType === 'PERSONAL'} 
-                onClick={() => setLicenseType('PERSONAL')} 
+                active={licenseType === 'personal'} 
+                onClick={() => setValue('type', 'personal')} 
               />
               <TypePill 
-                type="EXCLUSIVE" 
                 title="EXCLUSIVE" 
                 desc="Single buyer ownership" 
-                active={licenseType === 'EXCLUSIVE'} 
-                onClick={() => setLicenseType('EXCLUSIVE')} 
+                active={licenseType === 'exclusive'} 
+                onClick={() => setValue('type', 'exclusive')} 
               />
               <TypePill 
-                type="NON-EXCLUSIVE" 
                 title="NON-EXCLUSIVE" 
                 desc="Multi-user access" 
-                active={licenseType === 'NON-EXCLUSIVE'} 
-                onClick={() => setLicenseType('NON-EXCLUSIVE')} 
+                active={licenseType === 'non-exclusive'} 
+                onClick={() => setValue('type', 'non-exclusive')} 
               />
             </div>
           </div>
 
           {/* 2. License Price */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-6">License Price (ETH)</span>
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-4">License Price (ETH)</span>
             
-            <div className={`w-full bg-[#0A0A0F] border border-white/5 rounded-full py-4 px-6 flex items-center justify-between shadow-inner transition-colors ${licenseType === 'PERSONAL' ? 'opacity-70' : ''}`}>
+            <div className={`w-full bg-[#0A0A0F] border border-white/5 rounded-full py-4 px-6 flex items-center justify-between shadow-inner transition-colors ${licenseType === 'personal' ? 'opacity-70' : ''}`}>
               <div className="flex items-center gap-2 w-full">
-                {licenseType === 'PERSONAL' ? (
+                {licenseType === 'personal' ? (
                   <span className="text-base font-mono tracking-widest text-slate-600">
                     0.00
                   </span>
                 ) : (
                   <input 
                     type="number" 
+                    step="0.01"
                     placeholder="0.00"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    {...register('price', { valueAsNumber: true })}
                     className="bg-transparent border-none outline-none w-full text-white font-mono text-base tracking-widest placeholder-slate-600"
                   />
                 )}
               </div>
-              {licenseType === 'PERSONAL' && (
-                <span className="text-[9px] font-header font-bold text-white whitespace-nowrap tracking-widest uppercase">
-                  Disabled for Personal
+              {licenseType === 'personal' && (
+                <span className="text-[9px] font-header font-bold text-white whitespace-nowrap tracking-widest uppercase italic">
+                  Default for Personal
                 </span>
               )}
             </div>
+            {errors.price && (
+              <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic flex items-center gap-1">
+                <AlertCircle size={10} /> {errors.price.message}
+              </p>
+            )}
           </div>
 
           {/* 3. License Description */}
-          <div className="flex flex-col">
-            <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-6">License Description</span>
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-4">License Description</span>
             
             <textarea 
               rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-[#050505] border border-white/5 rounded-3xl py-5 px-6 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner resize-none font-light leading-relaxed"
+              {...register('description')}
+              className={`w-full bg-[#050505] border border-white/5 rounded-3xl py-5 px-6 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner resize-none font-light leading-relaxed ${errors.description ? 'border-red-500/30' : ''}`}
               placeholder="Detail the usage rights, limitations, and specific terms of this protocol license..."
             />
+            {errors.description && (
+              <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic flex items-center gap-1">
+                <AlertCircle size={10} /> {errors.description.message}
+              </p>
+            )}
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-center mt-6">
             <Button 
               variant="primary" 
               size="lg" 
+              type="submit"
               className="min-w-[240px] py-4 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
-              onClick={handleSubmit}
               disabled={createLicenseMutation.isPending}
             >
               {createLicenseMutation.isPending ? (
@@ -177,31 +207,23 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
               ) : 'Create License'}
             </Button>
           </div>
-
-        </div>
+        </form>
       </div>
 
-      {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-[#11111B] border border-white/5 rounded-3xl p-10 md:p-14 flex flex-col items-center text-center max-w-lg w-full shadow-2xl relative overflow-hidden">
-            
-            {/* Modal glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#2DD4BF]/20 blur-[60px] pointer-events-none" />
-
             <div className="w-20 h-20 rounded-full bg-[#1A1A2E] flex items-center justify-center mb-8 relative z-10 border border-white/5 shadow-xl">
               <div className="w-10 h-10 rounded-full bg-[#2DD4BF] flex items-center justify-center shadow-[0_0_20px_#2DD4BF]">
                 <Check className="w-6 h-6 text-[#1A1A2E] stroke-[3]" />
               </div>
             </div>
-
             <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-2 italic">License Created</h2>
             <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-8 italic">Successfully</h2>
-
             <p className="text-slate-300 font-body text-sm mb-12 font-light tracking-wide">
               Do you want to attach files to this license?
             </p>
-
             <div className="flex items-center gap-6 w-full justify-center">
               <Button 
                 variant="outline" 
@@ -225,10 +247,7 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
   );
 };
 
-// --- Subcomponents ---
-
 interface TypePillProps {
-  type: string;
   title: string;
   desc: string;
   active: boolean;
@@ -256,3 +275,5 @@ const TypePill: React.FC<TypePillProps> = ({ title, desc, active, onClick }) => 
 };
 
 export default LicenseCreationForm;
+
+

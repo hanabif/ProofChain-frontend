@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import overviewIcon from '../../assets/icons/overview.svg';
 import assetsIcon from '../../assets/icons/assets.svg';
 import requestIcon from '../../assets/icons/Request.svg';
@@ -7,6 +7,8 @@ import licenseIcon from '../../assets/icons/License.svg';
 import transactionsIcon from '../../assets/icons/transactions.svg';
 import settingsIcon from '../../assets/icons/settings.svg';
 import logoIcon from '../../assets/images/logo.svg';
+import { LogOut, User } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
@@ -14,11 +16,18 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     if (onToggle) onToggle(newState);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   const menuItems = [
@@ -40,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
       <div className="p-6 flex items-center gap-3 cursor-pointer" onClick={toggleSidebar}>
         <img src={logoIcon} alt="Logo" className="w-10 h-10 animate-pulse" />
         {!isCollapsed && (
-          <span className="text-xl font-bold tracking-wider text-white font-header">
+          <span className="text-xl font-bold tracking-wider text-white font-header uppercase">
             ProofChain
           </span>
         )}
@@ -70,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
               />
             </div>
             {!isCollapsed && (
-              <span className="text-sm font-medium tracking-widest font-header">
+              <span className="text-[11px] font-bold tracking-widest font-header">
                 {item.name}
               </span>
             )}
@@ -79,17 +88,41 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
       </nav>
 
       {/* User Profile Section */}
-      <div className="p-6 border-t border-[#ffffff10] flex justify-center">
-        <div className="w-12 h-12 rounded-full border-2 border-primary/50 overflow-hidden shadow-[0_0_15px_rgba(111,38,255,0.2)]">
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" 
-            alt="User" 
-            className="w-full h-full object-cover"
-          />
+      <div className={`p-6 border-t border-[#ffffff10] flex flex-col gap-4 ${isCollapsed ? 'items-center' : ''}`}>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-2 border-primary/50 overflow-hidden shadow-[0_0_15px_rgba(111,38,255,0.2)] shrink-0">
+            <img 
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+              alt="User" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {!isCollapsed && (
+            <div className="overflow-hidden">
+              <p className="text-xs font-bold text-white font-header truncate">{user?.name || 'Lucky User'}</p>
+              <p className="text-[9px] text-[#ffffff30] font-header truncate">{user?.walletAddress || '0x000...0000'}</p>
+            </div>
+          )}
         </div>
+        
+        <button 
+          onClick={handleLogout}
+          className={`
+            flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
+            text-red-400/60 hover:text-red-400 hover:bg-red-400/10 border border-transparent hover:border-red-400/20
+            ${isCollapsed ? 'justify-center' : ''}
+          `}
+        >
+          <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+          {!isCollapsed && (
+            <span className="text-[11px] font-bold tracking-widest font-header">LOGOUT</span>
+          )}
+        </button>
       </div>
     </div>
   );
 };
+
+export default Sidebar;
 
 export default Sidebar;

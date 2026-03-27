@@ -3,16 +3,34 @@ import { FileText, CheckCircle2, Copy, Lock, Link, Database, X } from 'lucide-re
 import { Button } from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const requestSchema = z.object({
+  message: z.string().min(10, 'Please provide more detail (at least 10 characters)'),
+});
+
+type RequestFormValues = z.infer<typeof requestSchema>;
+
 const FileDetail: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [requestDescription, setRequestDescription] = useState('');
 
-  const handleSendRequest = () => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<RequestFormValues>({
+    resolver: zodResolver(requestSchema),
+  });
+
+  const onFormSubmit = (data: RequestFormValues) => {
     // In a real app, this would send the request to the backend
-    console.log('Sending license request:', requestDescription);
+    console.log('Sending license request:', data.message);
     setIsModalOpen(false);
-    setRequestDescription('');
+    reset();
     // Optionally show a success toast here
   };
 
@@ -132,8 +150,12 @@ const FileDetail: React.FC = () => {
       {/* License Request Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#0B0B14] border border-white/5 rounded-[32px] p-8 md:p-12 relative shadow-[0_0_50px_rgba(0,0,0,1)] animate-in zoom-in-95 duration-300">
+          <form 
+            onSubmit={handleSubmit(onFormSubmit)}
+            className="w-full max-w-2xl bg-[#0B0B14] border border-white/5 rounded-[32px] p-8 md:p-12 relative shadow-[0_0_50px_rgba(0,0,0,1)] animate-in zoom-in-95 duration-300"
+          >
             <button 
+              type="button"
               onClick={() => setIsModalOpen(false)}
               className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors p-2"
             >
@@ -146,24 +168,28 @@ const FileDetail: React.FC = () => {
 
             <div className="relative group">
               <textarea
-                value={requestDescription}
-                onChange={(e) => setRequestDescription(e.target.value)}
-                placeholder="I plan to user this license ...."
-                className="w-full h-64 bg-[#050505] border border-white/10 rounded-3xl p-8 text-slate-300 font-body text-base placeholder-slate-700 focus:outline-none focus:border-[#B066FE]/50 transition-all shadow-inner resize-none"
+                {...register('message')}
+                placeholder="I plan to use this license for..."
+                className={`w-full h-64 bg-[#050505] border border-white/10 rounded-3xl p-8 text-slate-300 font-body text-base placeholder-slate-700 focus:outline-none focus:border-[#B066FE]/50 transition-all shadow-inner resize-none ${errors.message ? 'border-red-500/30' : ''}`}
               />
+              {errors.message && (
+                <p className="text-[10px] font-header text-red-400 uppercase tracking-widest mt-4 italic">
+                  {errors.message.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-center mt-10">
               <Button 
                 variant="primary" 
                 size="lg" 
+                type="submit"
                 className="min-w-[280px] py-5 text-sm font-black tracking-widest shadow-[0_0_30px_rgba(111,38,255,0.3)] hover:shadow-[0_0_40px_rgba(111,38,255,0.5)]"
-                onClick={handleSendRequest}
               >
                 Send Request
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
