@@ -8,59 +8,14 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from 'lucide-react';
+import { useTransactions } from '../../hooks/transactions/useTransactions';
 
 const Transactions: React.FC = () => {
   const [activePage, setActivePage] = useState(1);
-
-  const transactions = [
-    {
-      id: 1,
-      buyerName: "John Doe",
-      assetType: "Neural Rendering v4",
-      amount: "0.05",
-      currency: "ETH",
-      date: "Oct 24, 2023 • 14:22",
-      status: "CONFIRMED"
-    },
-    {
-      id: 2,
-      buyerName: "amy daniel",
-      assetType: "L-Chain Architecture",
-      amount: "1.25",
-      currency: "ETH",
-      date: "Oct 24, 2023 • 11:05",
-      status: "CONFIRMED"
-    },
-    {
-      id: 3,
-      buyerName: "abebe kebede",
-      assetType: "Real-time Voxel Engine",
-      amount: "0.88",
-      currency: "ETH",
-      date: "Oct 23, 2023 • 23:58",
-      status: "PENDING"
-    },
-    {
-      id: 4,
-      buyerName: "Sarah Connor",
-      assetType: "Cybernetic Blueprint",
-      amount: "2.50",
-      currency: "ETH",
-      date: "Oct 22, 2023 • 09:15",
-      status: "CONFIRMED"
-    },
-    {
-      id: 5,
-      buyerName: "James Howlett",
-      assetType: "Adamantium Structure",
-      amount: "5.00",
-      currency: "ETH",
-      date: "Oct 21, 2023 • 18:45",
-      status: "CONFIRMED"
-    }
-  ];
+  const { data: transactions, isLoading, isError, refetch } = useTransactions();
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
@@ -128,28 +83,52 @@ const Transactions: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.02]">
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="group hover:bg-white/[0.02] transition-colors">
-                      <td className="py-8 px-10 text-sm font-header font-bold text-white italic group-hover:text-primary transition-colors">{tx.buyerName}</td>
-                      <td className="py-8 px-6 text-sm font-body text-[#ffffff60]">{tx.assetType}</td>
-                      <td className="py-8 px-6 text-sm font-header font-bold text-white italic">
-                        {tx.amount} <span className="text-[10px] text-[#ffffff30] ml-1">{tx.currency}</span>
-                      </td>
-                      <td className="py-8 px-6 text-sm font-body text-[#ffffff40]">{tx.date}</td>
-                      <td className="py-8 px-10">
-                        <div className="flex justify-center">
-                          <div className={`px-5 py-1.5 rounded-full text-[9px] font-header tracking-widest border flex items-center gap-2 ${
-                            tx.status === 'CONFIRMED' 
-                              ? 'text-[#00ff95] bg-[#00ff95]/10 border-[#00ff95]/20' 
-                              : 'text-[#ffb800] bg-[#ffb800]/10 border-[#ffb800]/20'
-                          }`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${tx.status === 'CONFIRMED' ? 'bg-[#00ff95]' : 'bg-[#ffb800]'}`}></div>
-                            {tx.status}
-                          </div>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-20 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                          <p className="text-[#ffffff20] font-header tracking-widest text-[10px] uppercase italic">Fetching blockchain data...</p>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : isError ? (
+                    <tr>
+                      <td colSpan={5} className="py-20 text-center">
+                        <p className="text-red-400 font-header tracking-widest text-[10px] uppercase italic mb-4">Sync Error</p>
+                        <Button variant="outline" onClick={() => refetch()} clipped={false}>Retry Sync</Button>
+                      </td>
+                    </tr>
+                  ) : !transactions || transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-20 text-center">
+                        <p className="text-[#ffffff20] font-header tracking-[0.2em] italic uppercase text-[10px]">No transactions on record</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    transactions.map((tx) => (
+                      <tr key={tx.id} className="group hover:bg-white/[0.02] transition-colors">
+                        <td className="py-8 px-10 text-sm font-header font-bold text-white italic group-hover:text-primary transition-colors">REQ-{tx.requestId}</td>
+                        <td className="py-8 px-6 text-sm font-body text-[#ffffff60]">License Acquisition</td>
+                        <td className="py-8 px-6 text-sm font-header font-bold text-white italic">
+                          {tx.amount} <span className="text-[10px] text-[#ffffff30] ml-1">ETH</span>
+                        </td>
+                        <td className="py-8 px-6 text-sm font-body text-[#ffffff40]">{new Date(tx.createdAt).toLocaleString()}</td>
+                        <td className="py-8 px-10">
+                          <div className="flex justify-center">
+                            <div className={`px-5 py-1.5 rounded-full text-[9px] font-header tracking-widest border flex items-center gap-2 ${
+                              tx.status === 'success' 
+                                ? 'text-[#00ff95] bg-[#00ff95]/10 border-[#00ff95]/20' 
+                                : 'text-[#ff4b4b] bg-[#ff4b4b]/10 border-[#ff4b4b]/20'
+                            }`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${tx.status === 'success' ? 'bg-[#00ff95]' : 'bg-[#ff4b4b]'}`}></div>
+                              {tx.status.toUpperCase()}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

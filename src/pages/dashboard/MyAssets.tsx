@@ -3,49 +3,13 @@ import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import AssetCard from '../../components/dashboard/AssetCard';
 import { Button } from '../../components/ui/Button';
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus, Filter, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAssets } from '../../hooks/assets/useAssets';
 
 const MyAssets: React.FC = () => {
   const navigate = useNavigate();
-  const assets = [
-    {
-      id: 1,
-      type: 'document' as const,
-      name: 'Project_Alpha_v1.pdf',
-      date: 'Oct 24, 2023',
-      status: 'verified' as const,
-      license: 'Non-Exclusive',
-      price: 'Br20',
-    },
-    {
-      id: 2,
-      type: 'video' as const,
-      name: 'Brand_Cinematic_Final...',
-      date: 'Nov 12, 2023',
-      status: 'verified' as const,
-      license: 'Exclusive',
-      price: 'Br100',
-    },
-    {
-      id: 3,
-      type: 'image' as const,
-      name: 'Hero_Illustration_v2.p...',
-      date: 'Jan 05, 2024',
-      status: 'verified' as const,
-      license: 'Personal',
-      price: 'Br5',
-    },
-    {
-      id: 4,
-      type: 'document' as const,
-      name: 'Legacy_Assets_Bundl...',
-      date: 'Feb 18, 2024',
-      status: 'pending' as const,
-      license: 'Unassigned',
-      price: '--',
-    },
-  ];
+  const { data: assets, isLoading, isError, refetch } = useAssets();
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
@@ -113,9 +77,34 @@ const MyAssets: React.FC = () => {
 
           {/* Assets Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-            {assets.map((asset) => (
-              <AssetCard key={asset.id} {...asset} />
-            ))}
+            {isLoading ? (
+              <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <p className="text-[#ffffff20] font-header tracking-widest text-xs uppercase italic">Scanning file records...</p>
+              </div>
+            ) : isError ? (
+              <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-6">
+                <p className="text-red-400 font-header tracking-widest text-xs uppercase italic">Trace Error</p>
+                <Button variant="outline" onClick={() => refetch()} clipped={false}>Retry Scan</Button>
+              </div>
+            ) : !assets || assets.length === 0 ? (
+              <div className="col-span-full py-20 text-center">
+                <p className="text-[#ffffff20] font-header tracking-[0.2em] italic uppercase">Vault is empty</p>
+              </div>
+            ) : (
+              assets.map((asset) => (
+                <AssetCard 
+                  key={asset.id} 
+                  id={Number(asset.id)}
+                  type={asset.type === 'image' ? 'image' : 'document'}
+                  name={asset.title}
+                  date={new Date(asset.createdAt).toLocaleDateString()}
+                  status={asset.status as any}
+                  license={asset.licenseId || 'Unassigned'}
+                  price="--"
+                />
+              ))
+            )}
             
             {/* Add New Placeholder */}
             <div className="border-2 border-dashed border-[#ffffff10] rounded-[32px] flex flex-col items-center justify-center p-12 group cursor-pointer hover:border-primary/30 hover:bg-primary/5 transition-all duration-500">

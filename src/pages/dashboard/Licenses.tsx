@@ -3,45 +3,17 @@ import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import LicenseCard from '../../components/dashboard/LicenseCard';
 import { Button } from '../../components/ui/Button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Loader2 } from 'lucide-react';
+import { useLicenses } from '../../hooks/licenses/useLicenses';
 
 const Licenses: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: licenses, isLoading, isError, refetch } = useLicenses();
 
   const filterOptions = ['All', 'Personal', 'Exclusive', 'Non-exclusive'];
 
-  const licenses = [
-    {
-      id: '1',
-      type: 'EXCLUSIVE' as const,
-      status: 'ACTIVE' as const,
-      price: '4.50 ETH',
-      description: 'Full ownership transfer including commercial distribution and modification rights for premium neural assets.',
-      assetsAttached: 12,
-      requestsCount: 156,
-    },
-    {
-      id: '2',
-      type: 'PERSONAL' as const,
-      status: 'ACTIVE' as const,
-      price: 'Not for sale',
-      description: 'Restricted to personal portfolio use only. No commercial exploitation or sub-licensing permitted under any tier.',
-      assetsAttached: 42,
-      requestsCount: 0,
-    },
-    {
-      id: '3',
-      type: 'NON-EXCLUSIVE' as const,
-      status: 'INACTIVE' as const,
-      price: '0.85 ETH',
-      description: 'Standard commercial license allowing use in multiple projects. Includes 1-year updates and basic support.',
-      assetsAttached: '05',
-      requestsCount: 89,
-    }
-  ];
-
-  const filteredLicenses = licenses.filter(license => {
+  const filteredLicenses = licenses?.filter(license => {
     const matchesSearch = license.type.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           license.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = activeFilter === 'All' || license.type.toLowerCase() === activeFilter.toLowerCase();
@@ -112,12 +84,28 @@ const Licenses: React.FC = () => {
 
           {/* Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-10">
-            {filteredLicenses.map((license) => (
-              <LicenseCard 
-                key={license.id} 
-                {...license} 
-              />
-            ))}
+            {isLoading ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-20 space-y-4">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <p className="text-[#ffffff40] font-header tracking-widest text-xs uppercase italic">Loading licenses...</p>
+              </div>
+            ) : isError ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-20 space-y-6">
+                <p className="text-red-400 font-header tracking-widest text-xs uppercase italic text-center">Failed to load licenses. Please try again.</p>
+                <Button variant="outline" onClick={() => refetch()} clipped={false}>Retry</Button>
+              </div>
+            ) : filteredLicenses?.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-20 space-y-4">
+                <p className="text-[#ffffff40] font-header tracking-widest text-xs uppercase italic text-center">No licenses found matching your criteria.</p>
+              </div>
+            ) : (
+              filteredLicenses?.map((license) => (
+                <LicenseCard 
+                  key={license.id} 
+                  {...license} 
+                />
+              ))
+            )}
             
             {/* Add New Placeholder matching MyAssets style but for licenses */}
             <div className="bg-transparent border-2 border-dashed border-[#ffffff08] rounded-[40px] flex flex-col items-center justify-center p-12 group cursor-pointer hover:border-primary/30 hover:bg-primary/5 transition-all duration-500">

@@ -6,8 +6,14 @@ import OperationsTerminal from '../../components/dashboard/OperationsTerminal';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import assetsIcon from '../../assets/icons/assets.svg';
 import licenseIcon from '../../assets/icons/License.svg';
+import { useAssets } from '../../hooks/assets/useAssets';
+import { useTransactions } from '../../hooks/transactions/useTransactions';
 
 const DashboardOverview: React.FC = () => {
+  const { data: assets } = useAssets();
+  const { data: transactions } = useTransactions();
+
+  const totalEarnings = transactions?.reduce((acc, tx) => acc + Number(tx.amount || 0), 0) || 0;
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
       {/* Background Glow Decorations */}
@@ -42,13 +48,13 @@ const DashboardOverview: React.FC = () => {
             <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
               <StatCard 
                 icon={assetsIcon} 
-                label="TOTAL FILES" 
-                value="128" 
+                label="TOTAL ASSETS" 
+                value={assets?.length.toString() || "0"} 
               />
               <StatCard 
                 icon={licenseIcon} 
-                label="LICENSING EARNINGS" 
-                value="Br 4000" 
+                label="TOTAL EARNINGS" 
+                value={`${totalEarnings.toFixed(2)} ETH`} 
                 iconBgColor="green-400"
               />
             </div>

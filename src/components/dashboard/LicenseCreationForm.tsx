@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { useCreateLicense } from '../../hooks/licenses/useCreateLicense';
 
 type LicenseType = 'PERSONAL' | 'EXCLUSIVE' | 'NON-EXCLUSIVE';
 
@@ -11,9 +12,26 @@ interface LicenseCreationFormProps {
 
 const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard = false }) => {
   const [licenseType, setLicenseType] = useState<LicenseType>('PERSONAL');
+  const [price, setPrice] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
+  const createLicenseMutation = useCreateLicense();
+
+  const handleSubmit = async () => {
+    try {
+      await createLicenseMutation.mutateAsync({
+        type: licenseType.toLowerCase() as any,
+        price: Number(price) || 0,
+        status: 'active',
+        description: description,
+      });
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Failed to create license:', error);
+    }
+  };
 
   return (
     <div className={`w-full ${isDashboard ? '' : 'max-w-3xl mx-auto'}`}>
@@ -115,6 +133,8 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
                   <input 
                     type="number" 
                     placeholder="0.00"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
                     className="bg-transparent border-none outline-none w-full text-white font-mono text-base tracking-widest placeholder-slate-600"
                   />
                 )}
@@ -133,6 +153,8 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
             
             <textarea 
               rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-[#050505] border border-white/5 rounded-3xl py-5 px-6 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner resize-none font-light leading-relaxed"
               placeholder="Detail the usage rights, limitations, and specific terms of this protocol license..."
             />
@@ -144,9 +166,15 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
               variant="primary" 
               size="lg" 
               className="min-w-[240px] py-4 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
-              onClick={() => setShowSuccessModal(true)}
+              onClick={handleSubmit}
+              disabled={createLicenseMutation.isPending}
             >
-              Create License
+              {createLicenseMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  CREATING...
+                </span>
+              ) : 'Create License'}
             </Button>
           </div>
 

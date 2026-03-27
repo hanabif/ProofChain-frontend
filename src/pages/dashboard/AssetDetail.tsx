@@ -7,28 +7,16 @@ import {
   ArrowLeft, 
   FileText, 
   CheckCircle2, 
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
+import { useAsset } from '../../hooks/assets/useAsset';
 
 
 const AssetDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  // Mock data matching the screenshot
-  const asset = {
-    id: id || '1',
-    title: 'Project_Elysium_Manifesto',
-    fileName: 'Project_Elysium_v2.pdf',
-    fileType: 'PDF Document',
-    fileSize: '2.4 MB',
-    dateUploaded: 'Oct 24, 2024',
-    status: 'verified',
-    licenseType: 'NON-EXCLUSIVE',
-    valuation: '250.00',
-    currency: 'Br',
-    description: 'Granted for global digital distribution. Licensee may utilize this asset for internal architectural visualization and private R&D frameworks. Resale or modification of source binary is strictly prohibited under protocol 09-X.'
-  };
+  const { data: asset, isLoading, isError } = useAsset(id);
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
@@ -38,18 +26,30 @@ const AssetDetail: React.FC = () => {
         <DashboardNavbar />
 
         <div className="p-8 lg:p-12 overflow-y-auto max-h-[calc(100vh-88px)]">
-          {/* Header with Back Button */}
-          <div className="flex items-center gap-6 mb-12">
-            <button 
-              onClick={() => navigate('/dashboard/assets')}
-              className="w-12 h-12 rounded-full border border-[#ffffff10] bg-[#ffffff05] flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all duration-300 group"
-            >
-              <ArrowLeft className="w-6 h-6 text-[#ffffff60] group-hover:text-primary transition-colors" />
-            </button>
-            <h1 className="text-3xl md:text-4xl font-bold font-header tracking-tight text-white uppercase italic">
-              {asset.title}
-            </h1>
-          </div>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-40 space-y-4">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
+              <p className="text-[#ffffff20] font-header tracking-widest text-xs uppercase italic">Syncing asset data...</p>
+            </div>
+          ) : isError || !asset ? (
+            <div className="flex flex-col items-center justify-center py-40 space-y-6">
+              <p className="text-red-400 font-header tracking-widest text-xs uppercase italic">Asset Not Found</p>
+              <Button variant="outline" onClick={() => navigate('/dashboard/assets')} clipped={false}>Back to Assets</Button>
+            </div>
+          ) : (
+            <>
+              {/* Header with Back Button */}
+              <div className="flex items-center gap-6 mb-12">
+                <button 
+                  onClick={() => navigate('/dashboard/assets')}
+                  className="w-12 h-12 rounded-full border border-[#ffffff10] bg-[#ffffff05] flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all duration-300 group"
+                >
+                  <ArrowLeft className="w-6 h-6 text-[#ffffff60] group-hover:text-primary transition-colors" />
+                </button>
+                <h1 className="text-3xl md:text-4xl font-bold font-header tracking-tight text-white uppercase italic">
+                  {asset.title}
+                </h1>
+              </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             {/* Left Card: Asset Info */}
@@ -72,21 +72,21 @@ const AssetDetail: React.FC = () => {
                 {/* Metadata */}
                 <div className="flex-1 space-y-8 w-full">
                   <h2 className="text-2xl font-bold font-header tracking-wide text-white">
-                    {asset.fileName}
+                    {asset.title}
                   </h2>
 
                   <div className="space-y-6">
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
                       <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">File Type</span>
-                      <span className="text-sm font-body text-white">{asset.fileType}</span>
+                      <span className="text-sm font-body text-white">{asset.type}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
-                      <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">File Size</span>
-                      <span className="text-sm font-body text-white">{asset.fileSize}</span>
+                      <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">Date Created</span>
+                      <span className="text-sm font-body text-white">{new Date(asset.createdAt).toLocaleDateString()}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
-                      <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">Date Uploaded</span>
-                      <span className="text-sm font-body text-white">{asset.dateUploaded}</span>
+                      <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">Status</span>
+                      <span className="text-sm font-body text-white capitalize">{asset.status}</span>
                     </div>
                   </div>
 
@@ -112,24 +112,21 @@ const AssetDetail: React.FC = () => {
                      LICENSE DETAILS
                    </h3>
                    <span className="px-4 py-1.5 bg-primary/20 border border-primary/30 rounded-xl text-[10px] font-header tracking-widest text-[#ffffff80]">
-                     {asset.licenseType}
+                     {asset.licenseId}
                    </span>
                  </div>
 
                  <div className="mb-10">
-                   <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] block mb-2">Valuation</span>
+                   <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] block mb-2">Reference ID</span>
                    <div className="flex items-baseline gap-3">
-                     <span className="text-6xl font-black font-header tracking-tighter text-white">
-                       {asset.valuation}
-                     </span>
-                     <span className="text-3xl font-bold font-header text-primary">
-                       {asset.currency}
+                     <span className="text-4xl font-black font-header tracking-tighter text-white">
+                       {asset.id}
                      </span>
                    </div>
                  </div>
 
                  <p className="text-[#ffffff60] font-body text-sm leading-relaxed mb-8">
-                   {asset.description}
+                   Securely anchored to the ProofChain protocol. This asset is protected by automated smart contract enforcement.
                  </p>
               </div>
 
@@ -144,7 +141,7 @@ const AssetDetail: React.FC = () => {
                   leftIcon={<Upload className="w-5 h-5 mr-2" />}
                 >
                   <span className="flex items-center gap-2">
-                    Upload another file to this license
+                    Upload another file
                   </span>
                 </Button>
                 {/* Decorative accent for the button container to match the "slanted" look in screenshot */}
@@ -152,6 +149,8 @@ const AssetDetail: React.FC = () => {
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
     </div>

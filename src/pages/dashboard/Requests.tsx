@@ -6,69 +6,57 @@ import {
   ShieldCheck, 
   Lock, 
   File,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
+import { useRequests } from '../../hooks/requests/useRequests';
+import { useApproveRequest, useDeclineRequest } from '../../hooks/requests/useApproveRequest';
 
 type RequestStatus = 'RECEIVED' | 'SENT';
 
 const Requests: React.FC = () => {
   const [activeTab, setActiveTab] = useState<RequestStatus>('RECEIVED');
+  const { data: requests, isLoading, isError, refetch } = useRequests();
+  const approveMutation = useApproveRequest();
+  const declineMutation = useDeclineRequest();
 
-  // Mock data for Received Requests
-  const receivedRequests = [
-    {
-      id: 1,
-      user: "Alex Mercer",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-      resource: "Core_Identity_v2.pdf",
-      message: "Seeking a commercial license for our upcoming Web3 documentary series. We intend to use the architectural assets for the digital twin sequence in Episode 04.",
-      date: "Oct 24, 2024",
-      status: "PENDING"
-    },
-    {
-      id: 2,
-      user: "Sarah Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      resource: "Genesis_Void_Concept.jpg",
-      message: "Requesting rights for use in promotional materials for the MetaVoid launch. High-resolution output required for print media.",
-      date: "Oct 22, 2024",
-      status: "PENDING"
-    }
-  ];
+  // Filter requests for received (all for now based on mock)
+  const receivedRequests = requests?.filter(r => r.status === 'pending' || r.status === 'approved' || r.status === 'declined') || [];
 
-  // Mock data for Sent Requests
+  // Mock data for Sent Requests (keep as is for UI demonstration)
   const sentRequests = [
     {
-      id: 1,
+      id: "s1",
       owner: "Protocol Labs",
       resource: "Network_Architecture.dwg",
       date: "Nov 02, 2024",
-      status: "APPROVED",
+      status: "approved",
       type: "FILE"
     },
     {
-      id: 2,
+      id: "s2",
       owner: "MetaLabs",
       resource: "Security_Protocol_v4.pdf",
       date: "Nov 05, 2024",
-      status: "PENDING",
+      status: "pending",
       type: "SHIELD"
     },
     {
-        id: 3,
+        id: "s3",
         owner: "CyberDyne",
         resource: "Neural_Net_Design.zip",
         date: "Oct 28, 2024",
-        status: "DECLINED",
+        status: "declined",
         type: "LOCK"
     }
   ];
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'APPROVED': return 'text-[#00ff95] bg-[#00ff95]/10 border-[#00ff95]/20';
-      case 'PENDING': return 'text-[#ffb800] bg-[#ffb800]/10 border-[#ffb800]/20';
-      case 'DECLINED': return 'text-[#ff4b4b] bg-[#ff4b4b]/10 border-[#ff4b4b]/20';
+    const s = status.toLowerCase();
+    switch (s) {
+      case 'approved': return 'text-[#00ff95] bg-[#00ff95]/10 border-[#00ff95]/20';
+      case 'pending': return 'text-[#ffb800] bg-[#ffb800]/10 border-[#ffb800]/20';
+      case 'declined': return 'text-[#ff4b4b] bg-[#ff4b4b]/10 border-[#ff4b4b]/20';
       default: return 'text-white/40 bg-white/5 border-white/10';
     }
   };
@@ -126,55 +114,79 @@ const Requests: React.FC = () => {
 
           {activeTab === 'RECEIVED' ? (
             <div className="space-y-6">
-              {receivedRequests.map((req) => (
-                <div key={req.id} className="bg-[#161622]/40 border border-[#ffffff05] rounded-[32px] p-8 group hover:bg-[#161622]/60 transition-all duration-500">
-                  <div className="flex flex-col lg:flex-row gap-8">
-                    <div className="flex-1 space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <File className="w-5 h-5 text-primary" />
-                          <h3 className="text-lg font-bold font-header text-white italic">{req.resource}</h3>
-                        </div>
-                        <div className={`px-4 py-1 rounded-full text-[8px] font-header tracking-widest border ${getStatusColor(req.status)} uppercase`}>
-                          {req.status}
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-5 p-6 bg-black/40 border border-[#ffffff05] rounded-2xl">
-                        <img src={req.avatar} alt={req.user} className="w-12 h-12 rounded-xl border border-white/10" />
-                        <div className="flex-1 space-y-3">
-                          <div className="flex flex-col gap-0.5">
-                            <h4 className="text-sm font-bold font-header text-white tracking-wide">{req.user}</h4>
-                            <span className="text-[10px] font-body text-[#ffffff20]">{req.date}</span>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                  <p className="text-[#ffffff40] font-header tracking-widest text-xs uppercase italic">Loading requests...</p>
+                </div>
+              ) : isError ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                  <p className="text-red-400 font-header tracking-widest text-xs uppercase italic text-center">Failed to load requests.</p>
+                  <Button variant="outline" onClick={() => refetch()} clipped={false}>Retry</Button>
+                </div>
+              ) : receivedRequests.length === 0 ? (
+                <div className="text-center py-20">
+                  <p className="text-[#ffffff20] font-header tracking-[0.2em] italic uppercase">No incoming requests</p>
+                </div>
+              ) : (
+                receivedRequests.map((req) => (
+                  <div key={req.id} className="bg-[#161622]/40 border border-[#ffffff05] rounded-[32px] p-8 group hover:bg-[#161622]/60 transition-all duration-500">
+                    <div className="flex flex-col lg:flex-row gap-8">
+                      <div className="flex-1 space-y-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <File className="w-5 h-5 text-primary" />
+                            <h3 className="text-lg font-bold font-header text-white italic">Asset ID: {req.assetId}</h3>
                           </div>
-                          <p className="text-xs font-body text-[#ffffff60] leading-relaxed italic">
-                            "{req.message}"
-                          </p>
+                          <div className={`px-4 py-1 rounded-full text-[8px] font-header tracking-widest border ${getStatusColor(req.status)} uppercase`}>
+                            {req.status}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-5 p-6 bg-black/40 border border-[#ffffff05] rounded-2xl">
+                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${req.requesterName}`} alt={req.requesterName} className="w-12 h-12 rounded-xl border border-white/10" />
+                          <div className="flex-1 space-y-3">
+                            <div className="flex flex-col gap-0.5">
+                              <h4 className="text-sm font-bold font-header text-white tracking-wide">{req.requesterName}</h4>
+                              <span className="text-[10px] font-body text-[#ffffff20]">{new Date(req.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <p className="text-xs font-body text-[#ffffff60] leading-relaxed italic">
+                              "{req.message}"
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="lg:w-48 flex flex-row lg:flex-col gap-3 justify-center">
-                      <Button 
-                        variant="secondary" 
-                        fullWidth 
-                        className="!rounded-2xl !py-4 !text-[10px] !bg-white/5 !border-[#ffffff10] hover:!bg-white/10" 
-                        clipped={false}
-                      >
-                        DECLINE
-                      </Button>
-                      <Button 
-                        variant="primary" 
-                        fullWidth 
-                        className="!rounded-2xl !py-4 !text-[10px]" 
-                        clipped={false}
-                      >
-                        APPROVE
-                      </Button>
+                      <div className="lg:w-48 flex flex-row lg:flex-col gap-3 justify-center">
+                        {req.status === 'pending' && (
+                          <>
+                            <Button 
+                              variant="secondary" 
+                              fullWidth 
+                              className="!rounded-2xl !py-4 !text-[10px] !bg-white/5 !border-[#ffffff10] hover:!bg-white/10" 
+                              clipped={false}
+                              onClick={() => declineMutation.mutate(req.id)}
+                              disabled={declineMutation.isPending || approveMutation.isPending}
+                            >
+                              {declineMutation.isPending ? 'DECLINING...' : 'DECLINE'}
+                            </Button>
+                            <Button 
+                              variant="primary" 
+                              fullWidth 
+                              className="!rounded-2xl !py-4 !text-[10px]" 
+                              clipped={false}
+                              onClick={() => approveMutation.mutate(req.id)}
+                              disabled={approveMutation.isPending || declineMutation.isPending}
+                            >
+                              {approveMutation.isPending ? 'APPROVING...' : 'APPROVE'}
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -203,7 +215,7 @@ const Requests: React.FC = () => {
                   </div>
 
                   <div className="mt-auto pt-6 border-t border-[#ffffff05]">
-                    {req.status === 'APPROVED' ? (
+                    {req.status === 'approved' ? (
                       <Button 
                         variant="primary" 
                         fullWidth 

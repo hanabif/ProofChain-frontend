@@ -1,15 +1,9 @@
 import React from 'react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
+import type { License } from '../../types/license';
 
-interface LicenseCardProps {
-  id: string | number;
-  type: 'EXCLUSIVE' | 'PERSONAL' | 'NON-EXCLUSIVE';
-  status: 'ACTIVE' | 'INACTIVE';
-  price: string;
-  description: string;
-  assetsAttached: number | string;
-  requestsCount: number | string;
+interface LicenseCardProps extends License {
   onViewRequests?: () => void;
 }
 
@@ -19,9 +13,10 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
   status,
   price,
   description,
-  assetsAttached,
-  requestsCount,
+  assetCount,
+  requestCount,
 }) => {
+  const displayPrice = price === 0 || !price ? 'Not for sale' : `${price} ETH`;
 
   const navigate = useNavigate();
 
@@ -33,22 +28,22 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
       {/* Header Badges */}
       <div className="flex items-center justify-between mb-10">
         <div className="px-4 py-1.5 bg-[#ffffff05] border border-[#ffffff10] rounded-xl text-[10px] font-header tracking-widest text-[#ffffff60]">
-          {type}
+          {type.toUpperCase()}
         </div>
         <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-header tracking-widest ${
-          status === 'ACTIVE' 
+          status === 'active' 
             ? 'bg-[#00ff95]/10 border-[#00ff95]/20 text-[#00ff95]' 
             : 'bg-[#ff4b4b]/10 border-[#ff4b4b]/20 text-[#ff4b4b]'
         }`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${status === 'ACTIVE' ? 'bg-[#00ff95]' : 'bg-[#ff4b4b]'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
-          {status}
+          <div className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-[#00ff95]' : 'bg-[#ff4b4b]'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
+          {status.toUpperCase()}
         </div>
       </div>
 
       {/* Price Section */}
       <div className="mb-6">
         <h3 className="text-4xl font-bold font-header tracking-tight text-white mb-4 italic uppercase">
-          {price}
+          {displayPrice}
         </h3>
         <p className="text-[#ffffff40] font-body text-xs leading-relaxed line-clamp-3">
           {description}
@@ -59,11 +54,11 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
       <div className="grid grid-cols-2 gap-4 mb-10 mt-auto">
         <div className="p-4 bg-[#ffffff05] border border-[#ffffff08] rounded-2xl flex flex-col gap-1">
           <span className="text-[8px] font-header tracking-widest text-[#ffffff20] uppercase">Assets Attached</span>
-          <span className="text-xl font-bold font-header text-white">{assetsAttached}</span>
+          <span className="text-xl font-bold font-header text-white">{assetCount}</span>
         </div>
         <div className="p-4 bg-[#ffffff05] border border-[#ffffff08] rounded-2xl flex flex-col gap-1">
           <span className="text-[8px] font-header tracking-widest text-[#ffffff20] uppercase">Requests</span>
-          <span className="text-xl font-bold font-header text-white">{requestsCount}</span>
+          <span className="text-xl font-bold font-header text-white">{requestCount}</span>
         </div>
       </div>
 
@@ -92,7 +87,7 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
 
       {/* Bottom Link */}
       <div className="text-center pt-2">
-        {requestsCount !== 0 ? (
+        {requestCount !== 0 ? (
           <button 
             onClick={() => navigate(`/dashboard/license/${id}/requests`)}
             className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] hover:text-primary transition-colors uppercase italic"
