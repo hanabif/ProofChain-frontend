@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, Trash2, FileText, AlertCircle } from 'lucide-react';
+import { UploadCloud, Trash2, FileText } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

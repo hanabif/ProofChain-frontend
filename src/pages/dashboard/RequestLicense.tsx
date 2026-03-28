@@ -4,7 +4,6 @@ import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import { Button } from '../../components/ui/Button';
 import { 
   FileText, 
-  Image as ImageIcon, 
   Search, 
   Edit3, 
   ChevronDown,
@@ -23,7 +22,7 @@ const RequestLicense: React.FC = () => {
   const [activeTab, setActiveTab] = useState<RequestStatus>('All');
   
   const { data: license, isLoading: isLicenseLoading, isError: isLicenseError } = useLicense(id);
-  const { data: allRequests, isLoading: isRequestsLoading, isError: isRequestsError } = useRequests();
+  const { data: allRequests, isLoading: isRequestsLoading } = useRequests();
 
   const requests = allRequests?.filter(req => req.licenseId === id) || [];
 

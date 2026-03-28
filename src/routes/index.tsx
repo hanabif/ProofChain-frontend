@@ -3,6 +3,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from '../pages/LandingPage';
 import Register from '../pages/Register';
 import Login from '../pages/Login';
+import GoogleCallback from '../pages/GoogleCallback';
 import Explore from '../pages/Explore';
 import FileDetail from '../pages/FileDetail';
 import CreatLicense from '../pages/CreatLicense';
@@ -31,6 +32,7 @@ export default function AppRoutes() {
           <Route path="/file/:id" element={<FileDetail />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
           {/* Protected Dashboard Routes */}
           <Route path="/dashboard" element={<Navigate to="/dashboard/overview" replace />} />

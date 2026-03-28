@@ -1,6 +1,5 @@
 import React from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { ExploreCard } from '../components/ui/ExploreCard';
 
 // Mock Data

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import overviewIcon from '../../assets/icons/overview.svg';
-import assetsIcon from '../../assets/icons/assets.svg';
 import requestIcon from '../../assets/icons/Request.svg';
 import licenseIcon from '../../assets/icons/License.svg';
 import transactionsIcon from '../../assets/icons/transactions.svg';
 import settingsIcon from '../../assets/icons/settings.svg';
 import logoIcon from '../../assets/images/logo.svg';
-import { LogOut, User } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
@@ -32,7 +31,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
 
   const menuItems = [
     { name: 'OVERVIEW', icon: overviewIcon, path: '/dashboard/overview' },
-    { name: 'ASSETS', icon: assetsIcon, path: '/dashboard/assets' },
     { name: 'REQUESTS', icon: requestIcon, path: '/dashboard/requests' },
     { name: 'LICENSES', icon: licenseIcon, path: '/dashboard/licenses' },
     { name: 'TRANSACTIONS', icon: transactionsIcon, path: '/dashboard/transactions' },
@@ -92,15 +90,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full border-2 border-primary/50 overflow-hidden shadow-[0_0_15px_rgba(111,38,255,0.2)] shrink-0">
             <img 
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'User'}`} 
               alt="User" 
               className="w-full h-full object-cover"
             />
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-white font-header truncate">{user?.name || 'Lucky User'}</p>
-              <p className="text-[9px] text-[#ffffff30] font-header truncate">{user?.walletAddress || '0x000...0000'}</p>
+              <p className="text-xs font-bold text-white font-header truncate">{user ? `${user.first_name} ${user.last_name}`.trim() || user.username : 'User'}</p>
+              <p className="text-[9px] text-[#ffffff30] font-header truncate">{user?.wallet_address || '0x000...0000'}</p>
             </div>
           )}
         </div>
@@ -122,7 +120,5 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
     </div>
   );
 };
-
-export default Sidebar;
 
 export default Sidebar;

@@ -1,5 +1,4 @@
 import React from 'react';
-import { theme } from './theme';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;

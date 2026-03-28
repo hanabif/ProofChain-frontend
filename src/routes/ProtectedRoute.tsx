@@ -7,10 +7,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const token = useAuthStore((state) => state.token);
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  if (!token) {
     // Redirect to login but save the current location to redirect back after login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

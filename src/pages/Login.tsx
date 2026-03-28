@@ -1,27 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { Phone, Lock, Loader2, Wallet } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, Loader2, Wallet } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuthStore } from '../store/authStore';
+import { useLogin } from '../hooks/auth/useLogin';
 
 const loginSchema = z.object({
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  email: z.string().email('Enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const login = useAuthStore((state) => state.login);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const from = location.state?.from?.pathname || '/dashboard';
+  const { loginUser, loading: isLoading, error: apiError } = useLogin();
 
   const {
     register,
@@ -32,19 +27,7 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    console.log('Login attempt with:', data.phone);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // Mock user data
-    login({
-      walletAddress: '0x71C765...d897',
-      name: 'Lucky User',
-    });
-    
-    setIsLoading(false);
-    navigate(from, { replace: true });
+    await loginUser({ email: data.email, password: data.password });
   };
 
   return (
@@ -67,17 +50,22 @@ const Login: React.FC = () => {
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {apiError && (
+              <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic text-center">
+                {apiError}
+              </p>
+            )}
             <div className="space-y-1">
               <Input 
-                {...register('phone')}
-                label="Phone Number" 
-                placeholder="+1 (555) 000-0000" 
-                icon={<Phone size={18} />}
-                className={errors.phone ? 'border-red-500/50 focus:border-red-500/50' : ''}
+                {...register('email')}
+                label="Email" 
+                placeholder="you@example.com" 
+                icon={<Mail size={18} />}
+                className={errors.email ? 'border-red-500/50 focus:border-red-500/50' : ''}
               />
-              {errors.phone && (
+              {errors.email && (
                 <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
-                  {errors.phone.message}
+                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -120,7 +108,7 @@ const Login: React.FC = () => {
                 fullWidth 
                 className="border-slate-800/50 hover:bg-white/5 !text-[10px] tracking-widest"
                 leftIcon={<Wallet size={18} />}
-                onClick={() => onSubmit({ phone: '1234567890', password: 'password' } as LoginFormValues)}
+                onClick={() => loginUser({ email: 'wallet@example.com', password: 'wallet-login' })}
               >
                 CONNECT WALLET
               </Button>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, CheckCircle2, Copy, Lock, Link, Database, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { useNavigate } from 'react-router-dom';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +13,6 @@ const requestSchema = z.object({
 type RequestFormValues = z.infer<typeof requestSchema>;
 
 const FileDetail: React.FC = () => {
-  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {

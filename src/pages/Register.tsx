@@ -1,10 +1,45 @@
 import React from 'react';
-import { Navbar } from '../components/layout/Navbar';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { User, Mail, Phone, Lock, Calendar } from 'lucide-react';
+import { User, Mail, Lock, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useRegister } from '../hooks/auth/useRegister';
+import { useGoogleAuth } from '../hooks/auth/useGoogleAuth';
+
+const registerSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm_password: z.string(),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ["confirm_password"],
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register: React.FC = () => {
+  const { registerUser, loading, error: apiError } = useRegister();
+  const { initiateGoogleLogin } = useGoogleAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormValues) => {
+    const { confirm_password, ...payload } = data;
+    await registerUser(payload);
+  };
+
   return (
     <div className="min-h-screen bg-[#0B0B14] text-white flex flex-col relative overflow-hidden selection:bg-primary/30">
       
@@ -12,7 +47,6 @@ const Register: React.FC = () => {
       <div className="absolute top-[20%] right-[10%] w-64 h-64 border border-slate-800/20 rotate-45 pointer-events-none -z-10 animate-pulse" />
       <div className="absolute bottom-[20%] left-[5%] w-48 h-48 border border-slate-800/10 rounded-full pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full -z-20 pointer-events-none" />
-
 
       <main className="flex-1 flex items-center justify-center p-6 mt-20 relative z-10">
         <div className="w-full max-w-lg">
@@ -30,68 +64,120 @@ const Register: React.FC = () => {
               </p>
             </div>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-2 gap-4">
-                <Input 
-                  label="First Name" 
-                  placeholder="Satoshi" 
-                  icon={<User size={18} />}
-                />
-                <Input 
-                  label="Last Name" 
-                  placeholder="Nakamoto" 
-                  icon={<User size={18} />}
-                />
-              </div>
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+              {apiError && (
+                <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic text-center">
+                  {apiError}
+                </p>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Input 
+                    {...register('first_name')}
+                    label="First Name" 
+                    placeholder="Satoshi" 
+                    icon={<User size={18} />}
+                    className={errors.first_name ? 'border-red-500/50' : ''}
+                  />
+                  {errors.first_name && (
+                    <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                      {errors.first_name.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Input 
+                    {...register('last_name')}
+                    label="Last Name" 
+                    placeholder="Nakamoto" 
+                    icon={<User size={18} />}
+                    className={errors.last_name ? 'border-red-500/50' : ''}
+                  />
+                  {errors.last_name && (
+                    <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                      {errors.last_name.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
                 <Input 
+                  {...register('username')}
                   label="Username" 
                   placeholder="satoshin" 
                   icon={<User size={18} />}
+                  className={errors.username ? 'border-red-500/50' : ''}
                 />
+                {errors.username && (
+                  <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                    {errors.username.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1">
                 <Input 
+                  {...register('email')}
                   label="Email Address" 
                   placeholder="identity@proofchain.io" 
                   icon={<Mail size={18} />}
+                  className={errors.email ? 'border-red-500/50' : ''}
                 />
+                {errors.email && (
+                  <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Input 
-                  label="Date of Birth" 
-                  type="date"
-                  icon={<Calendar size={18} />}
-                />
-                <Input 
-                  label="Phone Number" 
-                  placeholder="+1 (555) 000-0000" 
-                  icon={<Phone size={18} />}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Input 
-                  label="Password" 
-                  type="password"
-                  placeholder="************" 
-                  icon={<Lock size={18} />}
-                />
-                <Input 
-                  label="Confirm Password" 
-                  type="password"
-                  placeholder="************" 
-                  icon={<Lock size={18} />}
-                />
+                <div className="space-y-1">
+                  <Input 
+                    {...register('password')}
+                    label="Password" 
+                    type="password"
+                    placeholder="••••••••" 
+                    icon={<Lock size={18} />}
+                    className={errors.password ? 'border-red-500/50' : ''}
+                  />
+                  {errors.password && (
+                    <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Input 
+                    {...register('confirm_password')}
+                    label="Confirm Password" 
+                    type="password"
+                    placeholder="••••••••" 
+                    icon={<Lock size={18} />}
+                    className={errors.confirm_password ? 'border-red-500/50' : ''}
+                  />
+                  {errors.confirm_password && (
+                    <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-2 italic">
+                      {errors.confirm_password.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="pt-4 space-y-4 text-center">
-                <Button fullWidth size="lg">
-                  Register
+                <Button fullWidth size="lg" type="submit" disabled={loading}>
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      CREATING ACCOUNT...
+                    </span>
+                  ) : 'CREATE ACCOUNT'}
                 </Button>
                 
                 <p className="text-[10px] font-header tracking-widest text-slate-500 uppercase">
-                  Already have an account? <span className="text-primary cursor-pointer hover:underline">Login</span>
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-primary cursor-pointer hover:underline">Login</Link>
                 </p>
 
                 <div className="flex items-center gap-4 py-2">
@@ -102,8 +188,10 @@ const Register: React.FC = () => {
 
                 <Button 
                   variant="outline" 
+                  type="button"
                   fullWidth 
                   className="border-slate-800/50 hover:bg-white/5"
+                  onClick={initiateGoogleLogin}
                   leftIcon={
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -121,7 +209,7 @@ const Register: React.FC = () => {
         </div>
       </main>
 
-      {/* Decorative side shape (wireframe box from image) */}
+      {/* Decorative side shape */}
       <div className="absolute right-10 top-1/3 opacity-20 pointer-events-none">
         <svg width="120" height="120" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.5">
           <path d="M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z" />
@@ -129,7 +217,6 @@ const Register: React.FC = () => {
         </svg>
       </div>
 
-       {/* Decorative side shape (circles from image) */}
        <div className="absolute left-[-50px] bottom-[15%] opacity-10 pointer-events-none scale-150">
         <div className="w-64 h-64 border border-white rounded-full flex items-center justify-center">
             <div className="w-48 h-48 border border-white/50 rounded-full" />
