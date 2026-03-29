@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import LicenseCard from '../../components/dashboard/LicenseCard';
@@ -7,16 +8,28 @@ import { Search, Plus, Loader2 } from 'lucide-react';
 import { useLicenses } from '../../hooks/licenses/useLicenses';
 
 const Licenses: React.FC = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const { data: licenses, isLoading, isError, refetch } = useLicenses();
 
   const filterOptions = ['All', 'Personal', 'Exclusive', 'Non-exclusive'];
+  const filterMapping: Record<string, string> = {
+    'Personal': 'PERSONAL',
+    'Exclusive': 'EXCLUSIVE',
+    'Non-exclusive': 'NON_EXCLUSIVE'
+  };
 
   const filteredLicenses = licenses?.filter(license => {
-    const matchesSearch = license.type.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          license.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = activeFilter === 'All' || license.type.toLowerCase() === activeFilter.toLowerCase();
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = 
+      license.title.toLowerCase().includes(searchLower) || 
+      license.description.toLowerCase().includes(searchLower);
+    
+    const matchesFilter = activeFilter === 'All' || 
+      license.type === filterMapping[activeFilter] ||
+      license.type === activeFilter.toUpperCase(); // Fallback
+      
     return matchesSearch && matchesFilter;
   });
 
@@ -45,6 +58,7 @@ const Licenses: React.FC = () => {
                 className="!py-4 !px-10 !text-sm italic font-header tracking-[0.1em] relative z-10" 
                 clipped={true}
                 leftIcon={<Plus className="w-5 h-5 mr-2" />}
+                onClick={() => navigate('/dashboard/create-license')}
               >
                 Create license
               </Button>

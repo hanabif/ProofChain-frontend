@@ -9,9 +9,9 @@ export const getAssets = async (): Promise<Asset[]> => {
   return assets;
 };
 
-export const getAssetById = async (id: string): Promise<Asset | undefined> => {
+export const getAssetById = async (id: string): Promise<Asset | null> => {
   await delay(500);
-  return assets.find((a) => a.id === id);
+  return assets.find((a) => a.id === id) || null;
 };
 
 export const getAssetsByLicenseId = async (licenseId: string): Promise<Asset[]> => {

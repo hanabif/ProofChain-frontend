@@ -9,14 +9,15 @@ interface LicenseCardProps extends License {
 
 const LicenseCard: React.FC<LicenseCardProps> = ({
   id,
-  type,
+  title,
   status,
   price,
   description,
-  assetCount,
-  requestCount,
+  assets = [],
+  requestCount = 0,
 }) => {
-  const displayPrice = price === 0 || !price ? 'Not for sale' : `${price} ETH`;
+  const displayPrice = !price || price === '0' || price === 0 ? 'FREE' : `${price} ETH`;
+  const assetCount = assets.length;
 
   const navigate = useNavigate();
 
@@ -27,25 +28,25 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
 
       {/* Header Badges */}
       <div className="flex items-center justify-between mb-10">
-        <div className="px-4 py-1.5 bg-[#ffffff05] border border-[#ffffff10] rounded-xl text-[10px] font-header tracking-widest text-[#ffffff60]">
-          {type.toUpperCase()}
+        <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-header tracking-widest text-primary font-bold">
+          {displayPrice}
         </div>
         <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-header tracking-widest ${
-          status === 'active' 
+          (status || 'active').toLowerCase() === 'active' 
             ? 'bg-[#00ff95]/10 border-[#00ff95]/20 text-[#00ff95]' 
             : 'bg-[#ff4b4b]/10 border-[#ff4b4b]/20 text-[#ff4b4b]'
         }`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-[#00ff95]' : 'bg-[#ff4b4b]'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
-          {status.toUpperCase()}
+          <div className={`w-1.5 h-1.5 rounded-full ${(status || 'active').toLowerCase() === 'active' ? 'bg-[#00ff95]' : 'bg-[#ff4b4b]'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
+          {(status || 'ACTIVE').toUpperCase()}
         </div>
       </div>
 
-      {/* Price Section */}
+      {/* Title Section */}
       <div className="mb-6">
-        <h3 className="text-4xl font-bold font-header tracking-tight text-white mb-4 italic uppercase">
-          {displayPrice}
+        <h3 className="text-3xl font-bold font-header tracking-tight text-white mb-4 italic uppercase line-clamp-2">
+          {title}
         </h3>
-        <p className="text-[#ffffff40] font-body text-xs leading-relaxed line-clamp-3">
+        <p className="text-[#ffffff40] font-body text-xs leading-relaxed line-clamp-3 min-h-[4rem]">
           {description}
         </p>
       </div>

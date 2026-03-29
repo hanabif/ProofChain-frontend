@@ -1,20 +1,16 @@
-import React from 'react';
 import { FileText, Film, Image as ImageIcon, Calendar } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { useNavigate } from 'react-router-dom';
 
 interface AssetCardProps {
   id: number | string;
   type: 'document' | 'video' | 'image';
   name: string;
   date: string;
-  status: 'verified' | 'pending';
+  status?: string;
   license: string;
   price: string;
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ id, type, name, date, status, license, price }) => {
-  const navigate = useNavigate();
+const AssetCard: React.FC<AssetCardProps> = ({ type, name, date, status, license, price }) => {
 
   const getIcon = () => {
     switch (type) {
@@ -32,10 +28,10 @@ const AssetCard: React.FC<AssetCardProps> = ({ id, type, name, date, status, lic
           {getIcon()}
         </div>
         <div className={`px-3 py-1 rounded-full border text-[10px] font-header tracking-widest flex items-center gap-2 ${
-          status === 'verified' ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-primary/10 border-primary/30 text-primary'
+          (status || 'verified').toLowerCase() === 'verified' ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-primary/10 border-primary/30 text-primary'
         }`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${status === 'verified' ? 'bg-green-500' : 'bg-primary'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
-          {status.toUpperCase()}
+          <div className={`w-1.5 h-1.5 rounded-full ${(status || 'verified').toLowerCase() === 'verified' ? 'bg-green-500' : 'bg-primary'} shadow-[0_0_8px_rgba(34,197,94,0.5)]`}></div>
+          {(status || 'VERIFIED').toUpperCase()}
         </div>
       </div>
 
@@ -44,9 +40,9 @@ const AssetCard: React.FC<AssetCardProps> = ({ id, type, name, date, status, lic
         <h3 className="text-lg font-bold font-header text-white truncate group-hover:text-primary transition-colors">
           {name}
         </h3>
-        <div className="flex items-center gap-2 text-[#ffffff30] text-[10px] font-header tracking-wider">
+        <div className="flex items-center gap-2 text-[#ffffff30] text-[10px] font-header tracking-wider uppercase">
           <Calendar className="w-3 h-3" />
-          {date.toUpperCase()}
+          {date || 'RECENT'}
         </div>
       </div>
 
@@ -55,19 +51,6 @@ const AssetCard: React.FC<AssetCardProps> = ({ id, type, name, date, status, lic
         <span className="text-[10px] font-header tracking-widest text-[#ffffff60] uppercase">{license}</span>
         <span className="text-[#ffffff20]">•</span>
         <span className="text-[10px] font-header tracking-widest text-primary font-bold">{price}</span>
-      </div>
-
-      {/* Actions Section */}
-      <div className="flex items-center gap-3">
-        <Button 
-          variant="secondary" 
-          fullWidth 
-          className="!rounded-2xl !py-3 !text-xs font-header tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(111,38,255,0.2)]" 
-          clipped={false}
-          onClick={() => navigate(`/dashboard/asset/${id}`)}
-        >
-          VIEW DETAILS
-        </Button>
       </div>
     </div>
   );

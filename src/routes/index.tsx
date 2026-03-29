@@ -11,7 +11,6 @@ import AttachFile from '../pages/AttachFile';
 import DashboardOverview from '../pages/dashboard/DashboardOverview';
 import VerifyDocument from '../pages/dashboard/VerifyDocument';
 import MyAssets from '../pages/dashboard/MyAssets';
-import AssetDetail from '../pages/dashboard/AssetDetail';
 import Licenses from '../pages/dashboard/Licenses';
 import Requests from '../pages/dashboard/Requests';
 import Transactions from '../pages/dashboard/Transactions';
@@ -57,7 +56,7 @@ export default function AppRoutes() {
           
           <Route path="/dashboard/asset/:id" element={
             <ProtectedRoute>
-              <AssetDetail />
+              <FileDetail />
             </ProtectedRoute>
           } />
           

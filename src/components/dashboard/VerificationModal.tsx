@@ -5,22 +5,23 @@ import { useNavigate } from 'react-router-dom';
 
 interface VerificationModalProps {
   status: 'success' | 'failure';
-  fileName?: string;
-  license?: string;
-  owner?: string;
+  data?: any;
   onClose: () => void;
 }
 
 const VerificationModal: React.FC<VerificationModalProps> = ({
   status,
-  fileName = 'Project_Genesis_v1.pdf',
-  license = 'Exclusive',
-  owner = 'Satoshi Nakamoto',
+  data,
   onClose,
 }) => {
   const navigate = useNavigate();
 
-  if (status === 'success') {
+  if (status === 'success' && data?.asset) {
+    const asset = data.asset;
+    const license = data.license;
+    const creator = data.creator;
+    const owner = data.current_owner;
+
     return (
       <div className="flex flex-col items-center text-center space-y-6 py-4">
         {/* Status Icon */}
@@ -32,45 +33,55 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-4xl font-bold font-header text-white tracking-tight">Verified</h2>
-          <p className="text-[#ffffff60] font-body text-sm">
-            This file matches a record on the blockchain.
+          <h2 className="text-4xl font-bold font-header text-white tracking-tight uppercase italic underline decoration-green-500/30">Verified</h2>
+          <p className="text-[#ffffff60] font-body text-sm lowercase tracking-widest italic">
+            This artifact matches a record on the blockchain.
           </p>
         </div>
 
         {/* Details Card */}
-        <div className="w-full bg-[#ffffff05] border border-[#ffffff10] rounded-3xl p-8 text-left space-y-6 relative overflow-hidden group">
+        <div className="w-full bg-[#ffffff05] border border-[#ffffff10] rounded-3xl p-8 text-left space-y-6 relative overflow-hidden group shadow-2xl">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-12 translate-x-12 blur-2xl"></div>
           
-          <div className="space-y-1">
-            <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30]">FILE NAME</p>
-            <p className="text-xl font-bold font-header text-[#ffffffcf] truncate">{fileName}</p>
-          </div>
-
-          <div className="flex justify-between items-end">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
               <div className="space-y-1">
-                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30]">LICENSE</p>
+                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase">Asset Name</p>
+                <p className="text-xl font-bold font-header text-white truncate">{asset.title || asset.file.split('/').pop()}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase">License Type</p>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(111,38,255,0.5)]"></div>
-                  <p className="text-sm font-body text-white">{license}</p>
+                  <p className="text-sm font-body text-white uppercase italic">{license?.type || 'STANDARD'}</p>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30]">OWNER</p>
-                <p className="text-sm font-body text-white">{owner}</p>
               </div>
             </div>
 
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase">Owner</p>
+                <p className="text-sm font-body text-white italic">{owner?.username || creator?.username || 'Unknown'}</p>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase">Asset ID</p>
+                <p className="text-[9px] font-mono text-[#ffffff20] break-all">{asset.id}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end">
             <Button 
               variant="primary" 
               onClick={() => {
                 onClose();
-                navigate('/file/1'); 
+                navigate(`/dashboard/asset/${asset.id}`, { state: { asset, license, owner, creator } }); 
               }}
-              className="!px-10"
+              className="!px-10 italic uppercase font-header tracking-widest !text-[10px]"
             >
-              Go to File
+              Examine Artifact
             </Button>
           </div>
         </div>
@@ -89,15 +100,15 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-4xl font-bold font-header text-white tracking-tight">Not Verified</h2>
-        <p className="text-[#ffffff60] font-body text-sm max-w-xs">
-          This file doesn't match any record on the blockchain.
+        <h2 className="text-4xl font-bold font-header text-white tracking-tight uppercase italic underline decoration-red-500/30">Not Verified</h2>
+        <p className="text-[#ffffff60] font-body text-sm max-w-xs lowercase tracking-widest italic">
+          {data?.message || "This file doesn't match any registered record on the blockchain."}
         </p>
       </div>
 
       <div className="pt-4">
-        <Button variant="outline" onClick={onClose} className="!px-12">
-          Try Another File
+        <Button variant="outline" onClick={onClose} className="!px-12 italic uppercase font-header tracking-widest !text-[10px]">
+          Scan Another
         </Button>
       </div>
     </div>

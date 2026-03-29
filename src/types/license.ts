@@ -1,12 +1,24 @@
-export type LicenseType = "personal" | "exclusive" | "non-exclusive";
-export type LicenseStatus = "active" | "inactive";
+export type LicenseType = "personal" | "exclusive" | "non-exclusive" | "PERSONAL" | "EXCLUSIVE" | "NON_EXCLUSIVE";
+export type LicenseStatus = "active" | "inactive" | "ACTIVE" | "INACTIVE";
+
+export interface Asset {
+  id: string;
+  file: string;
+  phash: string;
+  title?: string;
+  description?: string;
+  createdAt: string;
+  status: string;
+}
 
 export interface License {
   id: string;
+  title: string;
   type: LicenseType;
-  status: LicenseStatus;
-  price?: number;
+  status?: LicenseStatus;
+  price?: number | string;
   description: string;
-  assetCount: number;
-  requestCount: number;
+  assets: Asset[];
+  assetCount?: number;
+  requestCount?: number;
 }

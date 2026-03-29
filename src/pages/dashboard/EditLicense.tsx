@@ -44,7 +44,7 @@ const EditLicense: React.FC = () => {
 
   useEffect(() => {
     if (licenseData) {
-      setValue('price', licenseData.price || 0);
+      setValue('price', Number(licenseData.price) || 0);
       setValue('description', licenseData.description || '');
     }
   }, [licenseData, setValue]);

@@ -5,9 +5,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useLicenseDraftStore } from '../store/licenseDraftStore';
-import { uploadAssetAndLicense } from '../api/endpoints/assets.api';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { uploadAssetAndLicense, uploadAssetsToLicense } from '../api/endpoints/assets.api';
 
 const attachFileSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -32,7 +32,8 @@ const AttachFile: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
+  const [searchParams] = useSearchParams();
+  const licenseId = searchParams.get('licenseId');
   const { draft, clearDraft } = useLicenseDraftStore();
   const navigate = useNavigate();
 
@@ -90,7 +91,8 @@ const AttachFile: React.FC = () => {
   const handleFinalUpload = async () => {
     if (attachedFiles.length === 0) return;
     
-    if (!draft) {
+    // Check if we are adding to an existing license or creating a new one
+    if (!licenseId && !draft) {
       setFileError('License draft data missing. Please start over.');
       return;
     }
@@ -105,32 +107,39 @@ const AttachFile: React.FC = () => {
         fd.append('files', f.rawFile);
       });
 
-      // Use the License Title from the drafted state
-      if (draft.title) {
-        fd.append('title', draft.title);
+      if (licenseId) {
+        // Adding to an existing license
+        await uploadAssetsToLicense(licenseId, fd);
+        navigate(`/dashboard/license/${licenseId}/assets`);
+      } else if (draft) {
+        // Create new license with these files
+        if (draft.title) {
+          fd.append('title', draft.title);
+        } else {
+          fd.append('title', attachedFiles[0].title);
+        }
+        
+        if (draft.description) {
+          fd.append('description', draft.description);
+        }
+
+        const typeMapping: Record<string, string> = {
+          'personal': 'PERSONAL',
+          'exclusive': 'EXCLUSIVE',
+          'non-exclusive': 'NON_EXCLUSIVE',
+        };
+        fd.append('license_type', typeMapping[draft.type] || 'EXCLUSIVE');
+        
+        if (draft.price !== undefined) {
+          fd.append('price', draft.price.toString());
+        }
+
+        const res = await uploadAssetAndLicense(fd);
+        clearDraft();
+        navigate(`/dashboard/license/${res.id}/assets`);
       } else {
-        fd.append('title', attachedFiles[0].title);
+        navigate('/dashboard/assets');
       }
-      
-      if (draft.description) {
-        fd.append('description', draft.description);
-      }
-
-      const typeMapping: Record<string, string> = {
-        'personal': 'PERSONAL',
-        'exclusive': 'EXCLUSIVE',
-        'non-exclusive': 'NON_EXCLUSIVE',
-      };
-      fd.append('license_type', typeMapping[draft.type] || 'EXCLUSIVE');
-      
-      if (draft.price !== undefined) {
-        fd.append('price', draft.price.toString());
-      }
-
-      await uploadAssetAndLicense(fd);
-
-      clearDraft();
-      navigate('/dashboard');
       
     } catch (err: any) {
       console.error('Upload Error:', err?.response?.data || err);
@@ -164,8 +173,8 @@ const AttachFile: React.FC = () => {
 
       <div className="max-w-4xl mx-auto flex flex-col items-center w-full relative z-10">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-header font-black tracking-wide mb-4">
-            Attach Your Files
+          <h1 className="text-4xl md:text-5xl font-header font-black tracking-wide mb-4 uppercase">
+            {licenseId ? 'Secure Your Artifacts' : 'Attach Your Files'}
           </h1>
           <p className="text-slate-400 font-body text-sm md:text-base max-w-lg mx-auto leading-relaxed font-light">
             Create a permanent proof of ownership on the blockchain.
