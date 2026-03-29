@@ -4,6 +4,10 @@ import { Button } from '../components/ui/Button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useLicenseDraftStore } from '../store/licenseDraftStore';
+import { uploadAssetAndLicense } from '../api/endpoints/assets.api';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 const attachFileSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -18,6 +22,7 @@ interface AttachedFile {
   size: string;
   title: string;
   description: string;
+  rawFile: File;
 }
 
 const AttachFile: React.FC = () => {
@@ -26,6 +31,10 @@ const AttachFile: React.FC = () => {
   const [isAddingNew, setIsAddingNew] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const { draft, clearDraft } = useLicenseDraftStore();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -57,7 +66,7 @@ const AttachFile: React.FC = () => {
     }
   };
 
-  const onFormSubmit = (data: AttachFileValues) => {
+  const onFormSubmit = async (data: AttachFileValues) => {
     if (!selectedFile) {
       setFileError('Please select a file to attach');
       return;
@@ -68,15 +77,76 @@ const AttachFile: React.FC = () => {
       name: selectedFile.name,
       size: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
       title: data.title,
-      description: data.description
+      description: data.description || draft?.description || '',
+      rawFile: selectedFile,
     };
 
     setAttachedFiles([...attachedFiles, newFile]);
     setIsAddingNew(false);
-    
-    // Reset form
     setSelectedFile(null);
     reset();
+  };
+
+  const handleFinalUpload = async () => {
+    if (attachedFiles.length === 0) return;
+    
+    if (!draft) {
+      setFileError('License draft data missing. Please start over.');
+      return;
+    }
+
+    setIsUploading(true);
+    setFileError(null);
+
+    try {
+      const fd = new FormData();
+      
+      attachedFiles.forEach(f => {
+        fd.append('files', f.rawFile);
+      });
+
+      // Use the License Title from the drafted state
+      if (draft.title) {
+        fd.append('title', draft.title);
+      } else {
+        fd.append('title', attachedFiles[0].title);
+      }
+      
+      if (draft.description) {
+        fd.append('description', draft.description);
+      }
+
+      const typeMapping: Record<string, string> = {
+        'personal': 'PERSONAL',
+        'exclusive': 'EXCLUSIVE',
+        'non-exclusive': 'NON_EXCLUSIVE',
+      };
+      fd.append('license_type', typeMapping[draft.type] || 'EXCLUSIVE');
+      
+      if (draft.price !== undefined) {
+        fd.append('price', draft.price.toString());
+      }
+
+      await uploadAssetAndLicense(fd);
+
+      clearDraft();
+      navigate('/dashboard');
+      
+    } catch (err: any) {
+      console.error('Upload Error:', err?.response?.data || err);
+      let errorMsg = 'Failed to upload and create license. Please try again.';
+      
+      const backendDetail = err?.response?.data?.error?.detail || err?.response?.data?.detail;
+      if (typeof backendDetail === 'object' && backendDetail !== null) {
+        errorMsg = JSON.stringify(backendDetail);
+      } else if (typeof backendDetail === 'string') {
+        errorMsg = backendDetail;
+      }
+      
+      setFileError(errorMsg);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeFile = (id: string) => {
@@ -155,6 +225,7 @@ const AttachFile: React.FC = () => {
 
               <div className="flex flex-col justify-between">
                 <div className="flex flex-col gap-8">
+                  {/* Title input */}
                   <div className="flex flex-col gap-2">
                     <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-1">Title</span>
                     <input 
@@ -166,6 +237,7 @@ const AttachFile: React.FC = () => {
                     {errors.title && <p className="text-[9px] text-red-400 font-header uppercase tracking-widest pl-2 italic">{errors.title.message}</p>}
                   </div>
 
+                  {/* Description input */}
                   <div className="flex flex-col gap-2">
                     <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-1">Description</span>
                     <textarea 
@@ -191,15 +263,16 @@ const AttachFile: React.FC = () => {
                     variant="primary" 
                     size="lg" 
                     type="submit"
+                    disabled={!selectedFile}
                     className="w-full md:w-auto min-w-[200px] py-4 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
                   >
-                    Attach File
+                    Upload & Create
                   </Button>
                 </div>
               </div>
             </form>
           ) : (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <button
                 onClick={() => setIsAddingNew(true)}
                 className="w-full py-6 border border-[#B066FE]/30 rounded-[20px] bg-transparent text-[#B066FE] font-header font-bold text-[10px] tracking-[0.3em] uppercase hover:bg-[#B066FE]/5 hover:border-[#B066FE]/60 transition-all duration-300 relative group overflow-hidden"
@@ -207,6 +280,25 @@ const AttachFile: React.FC = () => {
                 <span className="relative z-10">Add another file</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#B066FE]/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </button>
+
+              <div className="flex justify-end pt-6 border-t border-white/10 mt-2">
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  onClick={handleFinalUpload}
+                  disabled={isUploading}
+                  className="w-full md:w-auto min-w-[240px] py-5 text-sm font-black tracking-widest shadow-[0_0_30px_rgba(111,38,255,0.5)] hover:shadow-[0_0_45px_rgba(111,38,255,0.7)]"
+                >
+                  {isUploading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      DEPLOYING...
+                    </span>
+                  ) : 'Finish & Deploy'}
+                </Button>
+              </div>
+              
+              {fileError && <p className="text-[10px] text-red-400 mt-2 font-header tracking-widest uppercase text-center italic">{fileError}</p>}
             </div>
           )}
         </div>

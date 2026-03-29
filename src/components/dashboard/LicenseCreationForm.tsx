@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Check, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronDown, Check, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { useCreateLicense } from '../../hooks/licenses/useCreateLicense';
+import { useLicenseDraftStore } from '../../store/licenseDraftStore';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 const licenseSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
   type: z.enum(['personal', 'exclusive', 'non-exclusive']),
   price: z.number().min(0, 'Price must be positive'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
@@ -29,7 +30,7 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
-  const createLicenseMutation = useCreateLicense();
+  const { setDraft } = useLicenseDraftStore();
 
   const {
     register,
@@ -40,6 +41,7 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
   } = useForm<LicenseFormValues>({
     resolver: zodResolver(licenseSchema),
     defaultValues: {
+      title: '',
       type: 'personal',
       price: 0,
       description: '',
@@ -55,17 +57,13 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
   }, [licenseType, setValue]);
 
   const onFormSubmit = async (data: LicenseFormValues) => {
-    try {
-      await createLicenseMutation.mutateAsync({
-        type: data.type as any,
-        price: data.price,
-        status: 'active',
-        description: data.description,
-      });
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Failed to create license:', error);
-    }
+    setDraft({
+      title: data.title,
+      type: data.type,
+      price: data.price,
+      description: data.description,
+    });
+    setShowSuccessModal(true);
   };
 
   return (
@@ -86,6 +84,22 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
 
         <form className="relative z-10 flex flex-col gap-10" onSubmit={handleSubmit(onFormSubmit)}>
           
+          {/* License Title */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-4">License Title</span>
+            <input 
+              type="text" 
+              {...register('title')}
+              placeholder="e.g. My Awesome License"
+              className={`w-full bg-[#050505] border border-white/5 rounded-3xl py-5 px-6 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner font-light leading-relaxed ${errors.title ? 'border-red-500/30' : ''}`}
+            />
+            {errors.title && (
+              <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic flex items-center gap-1">
+                <AlertCircle size={10} /> {errors.title.message}
+              </p>
+            )}
+          </div>
+
           {/* 1. License Type */}
           <div className="flex flex-col">
             <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-6">License Type</span>
@@ -197,14 +211,9 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
               size="lg" 
               type="submit"
               className="min-w-[240px] py-4 text-sm font-black tracking-widest shadow-[0_0_20px_rgba(111,38,255,0.4)] hover:shadow-[0_0_30px_rgba(111,38,255,0.6)]"
-              disabled={createLicenseMutation.isPending}
+              disabled={false}
             >
-              {createLicenseMutation.isPending ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  CREATING...
-                </span>
-              ) : 'Create License'}
+              Continue to File Upload
             </Button>
           </div>
         </form>
@@ -219,25 +228,18 @@ const LicenseCreationForm: React.FC<LicenseCreationFormProps> = ({ isDashboard =
                 <Check className="w-6 h-6 text-[#1A1A2E] stroke-[3]" />
               </div>
             </div>
-            <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-2 italic">License Created</h2>
-            <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-8 italic">Successfully</h2>
-            <p className="text-slate-300 font-body text-sm mb-12 font-light tracking-wide">
-              Do you want to attach files to this license?
+            <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-2 italic">License Details</h2>
+            <h2 className="text-2xl md:text-3xl font-header font-black text-white uppercase tracking-widest mb-8 italic">Drafted</h2>
+            <p className="text-slate-300 font-body text-sm mb-12 font-light tracking-wide px-4">
+              You must upload at least one file to activate this license. Otherwise, your license will not be valid.
             </p>
             <div className="flex items-center gap-6 w-full justify-center">
               <Button 
-                variant="outline" 
-                className="w-[160px] py-4 text-xs font-bold tracking-widest !rounded-2xl"
-                onClick={() => setShowSuccessModal(false)}
-              >
-                Maybe later
-              </Button>
-              <Button 
                 variant="primary" 
-                className="w-[160px] py-4 text-xs font-bold tracking-widest shadow-[0_0_15px_rgba(176,102,254,0.4)] !rounded-2xl"
+                className="w-full max-w-[240px] py-4 text-xs font-bold tracking-widest shadow-[0_0_15px_rgba(176,102,254,0.4)] !rounded-2xl"
                 onClick={() => navigate('/attach-file')}
               >
-                Add Files
+                Continue to Upload
               </Button>
             </div>
           </div>
