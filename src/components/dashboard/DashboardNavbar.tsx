@@ -1,6 +1,7 @@
 import { Search, Bell } from 'lucide-react';
 import { Button } from '../ui/Button';
 
+
 const DashboardNavbar: React.FC = () => {
   return (
     <div className="flex items-center justify-between p-6 bg-transparent border-b border-[#ffffff05] backdrop-blur-sm sticky top-0 z-40">
