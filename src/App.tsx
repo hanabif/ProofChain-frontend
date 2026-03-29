@@ -1,8 +1,12 @@
-import './App.css'
+import AppRoutes from './routes';
+import { useCurrentUser } from './hooks/auth/useCurrentUser';
+import './App.css';
 
 function App() {
-  
-  return <div>Hello</div>; 
+  // Initialize current user state on app mount
+  useCurrentUser();
+
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
