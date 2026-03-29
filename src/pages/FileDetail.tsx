@@ -2,13 +2,10 @@ import React from 'react';
 import { 
   FileText, 
   CheckCircle2, 
-  Copy, 
-  Lock, 
-  Link as LinkIcon, 
-  Database,
   ArrowLeft,
   Loader2,
-  ExternalLink
+  Lock,
+  Copy
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Sidebar from '../components/dashboard/Sidebar';
@@ -196,13 +193,6 @@ const InfoBox = ({ label, value, copyable }: { label: string, value: string, cop
       {copyable && <Copy className="w-4.5 h-4.5 text-slate-700 cursor-pointer hover:text-primary transition-all hover:scale-110 active:scale-95" />}
     </div>
   </div>
-);
-
-const LicenseFeature = ({ text }: { text: string }) => (
-  <li className="flex items-start gap-4 text-[13px] font-body text-slate-400 font-light leading-relaxed">
-    <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 opacity-60" />
-    {text}
-  </li>
 );
 
 export default FileDetail;

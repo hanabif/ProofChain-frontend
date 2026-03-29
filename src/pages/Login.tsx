@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { Mail, Lock, Loader2, Wallet } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -96,23 +96,6 @@ const Login: React.FC = () => {
                 ) : 'ACCESS DASHBOARD'}
               </Button>
               
-              <div className="flex items-center gap-4 py-2">
-                <div className="h-px flex-1 bg-slate-800" />
-                <span className="text-[10px] font-header text-slate-600 uppercase tracking-widest">OR</span>
-                <div className="h-px flex-1 bg-slate-800" />
-              </div>
-
-              <Button 
-                variant="outline" 
-                type="button"
-                fullWidth 
-                className="border-slate-800/50 hover:bg-white/5 !text-[10px] tracking-widest"
-                leftIcon={<Wallet size={18} />}
-                onClick={() => loginUser({ email: 'wallet@example.com', password: 'wallet-login' })}
-              >
-                CONNECT WALLET
-              </Button>
-
               <p className="text-[10px] font-header tracking-widest text-slate-500 uppercase pt-4 italic">
                 Don't have an account? <Link to="/register" className="text-primary cursor-pointer hover:underline">Register now</Link>
               </p>

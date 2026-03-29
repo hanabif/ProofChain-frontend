@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateLicense } from "../../services/licenseService";
+import { updateLicense } from "../../api/endpoints/assets.api.ts";
 import type { License } from "../../types/license";
 
 export const useUpdateLicense = () => {
@@ -9,7 +9,7 @@ export const useUpdateLicense = () => {
       updateLicense(id, updates),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["licenses"] });
-      queryClient.invalidateQueries({ queryKey: ["licenses", id] });
+      queryClient.invalidateQueries({ queryKey: ["license", id] });
     },
   });
 };

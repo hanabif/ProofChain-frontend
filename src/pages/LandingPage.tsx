@@ -22,8 +22,27 @@ import ownerKeyIcon from '../assets/icons/owner-key.svg';
 import statusIcon from '../assets/icons/transaction.svg';
 import qrIcon from '../assets/icons/Qr code.svg';
 
+import { useAuthStore } from '../store/authStore';
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { token } = useAuthStore();
+
+  const handleCreateLicense = () => {
+    if (token) {
+      navigate('/create-license');
+    } else {
+      navigate('/login?redirect=/create-license');
+    }
+  };
+
+  const handleCTAAction = () => {
+    if (token) {
+      navigate('/dashboard/overview');
+    } else {
+      navigate('/register');
+    }
+  };
 
   return (
     <div className="flex flex-col w-full overflow-hidden bg-[#0B0B14] min-h-screen relative text-white">
@@ -43,12 +62,20 @@ const LandingPage: React.FC = () => {
         <div className="relative w-full max-w-7xl">
           {/* Top Right Header Buttons - Outside Hero Card to avoid clip-path */}
           <div className="absolute top-6 right-12 hidden md:flex items-center gap-[15px] z-30">
-             <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
-                Login
-             </Button>
-             <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
-                Register now
-             </Button>
+             {token ? (
+               <Button variant="primary" size="sm" onClick={() => navigate('/dashboard/overview')}>
+                 Go to Dashboard
+               </Button>
+             ) : (
+               <>
+                 <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+                    Login
+                 </Button>
+                 <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
+                    Register now
+                 </Button>
+               </>
+             )}
           </div>
 
           {/* Main Hero Card */}
@@ -76,7 +103,7 @@ const LandingPage: React.FC = () => {
                 <Button 
                   variant="primary" 
                   size="lg"
-                  onClick={() => navigate('/create-license')}
+                  onClick={handleCreateLicense}
                 >
                   Create License
                 </Button>
@@ -244,9 +271,9 @@ const LandingPage: React.FC = () => {
               variant="primary"
               size="lg"
               className="px-24 py-8 text-lg"
-              onClick={() => navigate('/register')}
+              onClick={handleCTAAction}
             >
-              Register now
+              {token ? 'Go to Dashboard' : 'Register now'}
             </Button>
           </div>
         </div>

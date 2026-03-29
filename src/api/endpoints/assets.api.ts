@@ -27,3 +27,11 @@ export const verifyAsset = (file: File): Promise<any> => {
   formData.append('file', file);
   return api.post('/api/assets/verify', formData).then((res) => res.data);
 };
+
+export const getLicenseById = (id: string): Promise<License> => {
+  return api.get<License>(`/api/assets/licenses/${id}`).then((res) => res.data);
+};
+
+export const updateLicense = (id: string, data: Partial<License>): Promise<License> => {
+  return api.patch<License>(`/api/assets/licenses/${id}`, data).then((res) => res.data);
+};

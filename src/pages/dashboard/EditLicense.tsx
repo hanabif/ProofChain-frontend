@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 const editLicenseSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters'),
   price: z.number().min(0, 'Price must be positive'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
 });
@@ -37,6 +38,7 @@ const EditLicense: React.FC = () => {
   } = useForm({
     resolver: zodResolver(editLicenseSchema),
     defaultValues: {
+      title: '',
       price: 0,
       description: '',
     }
@@ -44,6 +46,7 @@ const EditLicense: React.FC = () => {
 
   useEffect(() => {
     if (licenseData) {
+      setValue('title', licenseData.title || '');
       setValue('price', Number(licenseData.price) || 0);
       setValue('description', licenseData.description || '');
     }
@@ -55,7 +58,8 @@ const EditLicense: React.FC = () => {
       await updateMutation.mutateAsync({
         id,
         updates: {
-          price: data.price,
+          title: data.title,
+          price: data.price as any,
           description: data.description
         }
       });
@@ -99,49 +103,65 @@ const EditLicense: React.FC = () => {
               </div>
 
               <form className="max-w-4xl space-y-8" onSubmit={handleSubmit(onFormSubmit)}>
-                {/* Info Card */}
+                {/* Title Field */}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block pl-4">
+                    License Registry Title
+                  </label>
+                  <input 
+                    type="text" 
+                    {...register('title')}
+                    placeholder="Enter Protocol Title..."
+                    className={`w-full bg-[#ffffff05] border border-[#ffffff08] rounded-[24px] py-5 px-8 text-xl font-header text-white focus:outline-none focus:border-primary/50 focus:bg-[#ffffff0a] transition-all ${errors.title ? 'border-red-500/30' : ''}`}
+                  />
+                  {errors.title && (
+                    <p className="text-[9px] font-header text-red-400 uppercase tracking-widest pl-4 italic">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Info Card - Type info */}
                 <div className="bg-[#161622]/40 border border-[#ffffff08] rounded-[40px] p-8 relative overflow-hidden group shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] -z-10"></div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <div className="space-y-6">
-                      <div className="space-y-3">
-                        <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">License Type</span>
-                        <div className="flex items-center gap-4">
-                          <div className="px-6 py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-header tracking-widest text-primary uppercase">
-                            {licenseData.type}
-                          </div>
-                          <div className="flex items-center gap-2 text-[#ffffff20]">
-                            <Lock className="w-3.5 h-3.5" />
-                            <span className="text-[9px] font-header tracking-widest uppercase">Immutable</span>
-                          </div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">License Protocol</span>
+                      <div className="flex items-center gap-4">
+                        <div className="px-6 py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-header tracking-widest text-primary uppercase">
+                          {licenseData.type}
+                        </div>
+                        <div className="flex items-center gap-2 text-[#ffffff20]">
+                          <Lock className="w-3.5 h-3.5" />
+                          <span className="text-[9px] font-header tracking-widest uppercase">Immutable Type</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">Linked Assets</span>
+                    <div className="flex gap-12">
+                      <div className="space-y-2 text-right">
+                        <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">Linked Artifacts</span>
                         <div className="text-3xl font-bold font-header text-white">
-                          {licenseData.assetCount} <span className="text-sm font-medium text-[#ffffff30] ml-1">Assets</span>
+                          {licenseData.assetCount || licenseData.assets?.length || 0}
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">Active Requests</span>
+                      <div className="space-y-2 text-right">
+                        <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff20] uppercase">Usage Requests</span>
                         <div className="text-3xl font-bold font-header text-[#ff4b4b]">
-                          {licenseData.requestCount} <span className="text-sm font-medium text-[#ffffff30] ml-1">Requests</span>
+                          {licenseData.requestCount || 0}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Form Section */}
-                <div className="space-y-8">
+                {/* Form Inputs (Price & Description) */}
+                <div className="grid grid-cols-1 gap-8">
                   {/* Price Field */}
                   <div className="space-y-4">
-                    <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block">
-                      License Price (ETH)
+                    <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block pl-4">
+                      License Fee (ETH)
                     </label>
                     <div className={`relative group ${isPersonal ? 'opacity-50' : ''}`}>
                       <input 
@@ -167,8 +187,8 @@ const EditLicense: React.FC = () => {
 
                   {/* Description Field */}
                   <div className="space-y-4">
-                    <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block">
-                      License Description
+                    <label className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase block pl-4">
+                      Protocol Description
                     </label>
                     <textarea 
                       {...register('description')}
@@ -189,14 +209,14 @@ const EditLicense: React.FC = () => {
                     <Button 
                       variant="primary" 
                       type="submit"
-                      className="!py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] relative z-10" 
+                      className="!py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] relative z-10 uppercase" 
                       clipped={true}
                       disabled={updateMutation.isPending}
                     >
                       {updateMutation.isPending ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          VERIFYING...
+                          Updating...
                         </span>
                       ) : 'Save Changes'}
                     </Button>
@@ -206,7 +226,7 @@ const EditLicense: React.FC = () => {
                   <Button 
                     variant="outline" 
                     type="button"
-                    className="!rounded-[20px] !py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] !border-white/10 hover:!bg-white/5" 
+                    className="!rounded-[20px] !py-5 !px-16 !text-[11px] italic font-header tracking-[0.2em] !border-white/10 hover:!bg-white/5 uppercase" 
                     clipped={true}
                     onClick={() => navigate('/dashboard/licenses')}
                   >
