@@ -179,7 +179,7 @@ const LicenseAssets: React.FC = () => {
                   id={asset.id}
                   type={asset.file.toLowerCase().match(/\.(mp4|mov|avi)$/) ? 'video' : (asset.file.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif)$/) ? 'image' : 'document')}
                   name={asset.title || asset.file.split('/').pop() || 'Untitled Asset'}
-                  date={new Date(asset.createdAt).toLocaleDateString()}
+                  date={new Date(asset.createdAt || '').toLocaleDateString()}
                   status={asset.status as any}
                   license={license.title}
                   price={displayPrice}

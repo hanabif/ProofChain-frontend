@@ -195,7 +195,7 @@ const RequestLicense: React.FC = () => {
                         <div className="pt-6 border-t border-[#ffffff05] flex items-center justify-between">
                           <div className="flex items-center gap-2 text-[10px] font-header tracking-widest text-[#ffffff20]">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#ffffff10]"></span>
-                            {new Date(req.createdAt).toLocaleDateString()}
+                            {new Date(req.createdAt || '').toLocaleDateString()?? ''}
                           </div>
                           
                           <div className="flex items-center gap-4">

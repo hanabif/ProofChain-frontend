@@ -100,7 +100,7 @@ const MyAssets: React.FC = () => {
                   id={Number(asset.id)}
                   type={asset.type === 'image' ? 'image' : 'document'}
                   name={asset.title}
-                  date={new Date(asset.createdAt).toLocaleDateString()}
+                  date={new Date(asset.createdAt || '').toLocaleDateString()?? ''}
                   status={asset.status as any}
                   license={asset.licenseId || 'Unassigned'}
                   price="--"

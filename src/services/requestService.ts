@@ -14,7 +14,7 @@ export const createRequest = async (data: Partial<Request>): Promise<Request> =>
   const newRequest: Request = {
     id: `r${Date.now()}`,
     status: "pending",
-    createdAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()?? '',
     ...data,
   } as Request;
   

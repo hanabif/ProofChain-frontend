@@ -113,7 +113,7 @@ const Transactions: React.FC = () => {
                         <td className="py-8 px-6 text-sm font-header font-bold text-white italic">
                           {tx.amount} <span className="text-[10px] text-[#ffffff30] ml-1">ETH</span>
                         </td>
-                        <td className="py-8 px-6 text-sm font-body text-[#ffffff40]">{new Date(tx.createdAt).toLocaleString()}</td>
+                        <td className="py-8 px-6 text-sm font-body text-[#ffffff40]">{new Date(tx.createdAt || '').toLocaleString()}</td>
                         <td className="py-8 px-10">
                           <div className="flex justify-center">
                             <div className={`px-5 py-1.5 rounded-full text-[9px] font-header tracking-widest border flex items-center gap-2 ${
