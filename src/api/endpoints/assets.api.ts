@@ -1,4 +1,4 @@
-import { api } from '../client';
+import { api, publicApi } from '../client';
 import type { License } from '../../types/license';
 
 export interface PaginatedResponse<T> {
@@ -6,6 +6,16 @@ export interface PaginatedResponse<T> {
   next: string | null;
   previous: string | null;
   results: T[];
+}
+
+export interface LicenseSearchParams {
+  q?: string;
+  min_price?: number;
+  max_price?: number;
+  sort?: string;
+  type?: string;
+  page?: number;
+  page_size?: number;
 }
 
 export const uploadAssetAndLicense = (formData: FormData): Promise<any> => {
@@ -29,9 +39,15 @@ export const verifyAsset = (file: File): Promise<any> => {
 };
 
 export const getLicenseById = (id: string): Promise<License> => {
-  return api.get<License>(`/api/assets/licenses/${id}`).then((res) => res.data);
+  return publicApi.get<License>(`/api/assets/licenses/${id}`).then((res) => res.data);
 };
 
 export const updateLicense = (id: string, data: Partial<License>): Promise<License> => {
   return api.patch<License>(`/api/assets/licenses/${id}`, data).then((res) => res.data);
+};
+
+export const searchLicenses = (params: LicenseSearchParams): Promise<PaginatedResponse<License>> => {
+  return publicApi.get<PaginatedResponse<License>>('/api/assets/licenses/search', {
+    params,
+  }).then((res) => res.data);
 };

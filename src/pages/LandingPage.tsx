@@ -64,9 +64,6 @@ const LandingPage: React.FC = () => {
           <div className="absolute top-6 right-12 hidden md:flex items-center gap-[15px] z-30">
             {token ? (
               <>
-                <Button variant="outline" size="sm" onClick={() => alert(localStorage.getItem('token') || 'Token not found')}>
-                  Debug: Show Token
-                </Button>
                 <Button variant="outline" size="sm" onClick={() => logout()}>
                   Logout
                 </Button>
@@ -76,9 +73,6 @@ const LandingPage: React.FC = () => {
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={() => alert(localStorage.getItem('token') || 'No token found in localStorage')}>
-                  Debug: Show Token
-                </Button>
                 <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
                    Login
                 </Button>
@@ -123,7 +117,7 @@ const LandingPage: React.FC = () => {
                   size="lg"
                   onClick={() => navigate('/explore')}
                 >
-                  Explore Files
+                  Explore Licenses
                 </Button>
               </div>
             </div>

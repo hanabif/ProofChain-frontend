@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMyLicenses } from "../../api/endpoints/assets.api";
+import { getMyLicenses, getLicenseById } from "../../api/endpoints/assets.api";
 
 export const useLicenses = (page = 1, pageSize = 10) => {
   return useQuery({
@@ -12,4 +12,12 @@ export const useLicenses = (page = 1, pageSize = 10) => {
 export const useLicense = (id: string | undefined) => {
   const { data: licenses } = useLicenses(1, 100);
   return licenses?.find(l => l.id === id);
+};
+
+export const useLicenseDetail = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ["license", id],
+    queryFn: () => getLicenseById(id!),
+    enabled: !!id,
+  });
 };
