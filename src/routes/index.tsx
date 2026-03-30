@@ -10,7 +10,6 @@ import CreatLicense from '../pages/CreatLicense';
 import AttachFile from '../pages/AttachFile';
 import DashboardOverview from '../pages/dashboard/DashboardOverview';
 import VerifyDocument from '../pages/dashboard/VerifyDocument';
-import MyAssets from '../pages/dashboard/MyAssets';
 import Licenses from '../pages/dashboard/Licenses';
 import Requests from '../pages/dashboard/Requests';
 import Transactions from '../pages/dashboard/Transactions';
@@ -50,11 +49,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           } />
           
-          <Route path="/dashboard/assets" element={
-            <ProtectedRoute>
-              <MyAssets />
-            </ProtectedRoute>
-          } />
           
           <Route path="/dashboard/asset/:id" element={
             <ProtectedRoute>
@@ -123,4 +117,4 @@ export default function AppRoutes() {
       </MainLayout>
     </BrowserRouter>
   );
-}
+}

@@ -6,14 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useLicenseDraftStore } from '../store/licenseDraftStore';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useActivityStore } from '../store/activityStore';
 import { Loader2 } from 'lucide-react';
 import { uploadAssetAndLicense, uploadAssetsToLicense } from '../api/endpoints/assets.api';
 import { useQueryClient } from '@tanstack/react-query';
-
-const attachFileSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-});
+import { toast } from '../components/ui/Toast';
+const attachFileSchema = z.object({});
 
 type AttachFileValues = z.infer<typeof attachFileSchema>;
 
@@ -36,15 +34,12 @@ const AttachFile: React.FC = () => {
   const [searchParams] = useSearchParams();
   const licenseId = searchParams.get('licenseId');
   const { draft, clearDraft } = useLicenseDraftStore();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { addActivity } = useActivityStore();
+  const navigate = useNavigate();
 
   const {
-    register,
     handleSubmit,
-    setValue,
-    reset,
-    formState: { errors },
   } = useForm<AttachFileValues>({
     resolver: zodResolver(attachFileSchema),
   });
@@ -56,7 +51,6 @@ const AttachFile: React.FC = () => {
     if (file) {
       setSelectedFile(file);
       setFileError(null);
-      setValue('title', file.name.split('.')[0]);
     }
   };
 
@@ -65,11 +59,10 @@ const AttachFile: React.FC = () => {
     if (file) {
       setSelectedFile(file);
       setFileError(null);
-      setValue('title', file.name.split('.')[0]);
     }
   };
 
-  const onFormSubmit = async (data: AttachFileValues) => {
+  const onFormSubmit = async () => {
     if (!selectedFile) {
       setFileError('Please select a file to attach');
       return;
@@ -79,15 +72,14 @@ const AttachFile: React.FC = () => {
       id: Math.random().toString(36).substr(2, 9),
       name: selectedFile.name,
       size: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-      title: data.title,
-      description: data.description || draft?.description || '',
+      title: selectedFile.name.split('.')[0],
+      description: draft?.description || '',
       rawFile: selectedFile,
     };
 
     setAttachedFiles([...attachedFiles, newFile]);
     setIsAddingNew(false);
     setSelectedFile(null);
-    reset();
   };
 
   const handleFinalUpload = async () => {
@@ -136,10 +128,18 @@ const AttachFile: React.FC = () => {
           fd.append('price', draft.price.toString());
         }
 
-          const res = await uploadAssetAndLicense(fd);
+          await uploadAssetAndLicense(fd);
           clearDraft();
           queryClient.invalidateQueries({ queryKey: ['licenses'] });
-          navigate(`/dashboard/license/${res.id}/assets`);
+          
+          addActivity({
+            type: 'registration',
+            title: `Asset "${attachedFiles[0]?.name || 'Unknown'}" registered`,
+            subtitle: `TYPE: ${draft.type.toUpperCase()}`,
+          });
+
+          toast.success('License created successfully!');
+          navigate(`/dashboard/licenses`);
         } else {
           queryClient.invalidateQueries({ queryKey: ['licenses'] });
           navigate('/dashboard/assets');
@@ -236,33 +236,7 @@ const AttachFile: React.FC = () => {
                 {fileError && <p className="text-[10px] text-red-400 mt-2 font-header tracking-widest uppercase text-center italic">{fileError}</p>}
               </div>
 
-              <div className="flex flex-col justify-between">
-                <div className="flex flex-col gap-8">
-                  {/* Title input */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-1">Title</span>
-                    <input 
-                      type="text" 
-                      {...register('title')}
-                      placeholder="Project Alpha_v1"
-                      className={`w-full bg-[#050505] border border-white/5 rounded-xl py-4 px-5 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner ${errors.title ? 'border-red-500/30' : ''}`}
-                    />
-                    {errors.title && <p className="text-[9px] text-red-400 font-header uppercase tracking-widest pl-2 italic">{errors.title.message}</p>}
-                  </div>
-
-                  {/* Description input */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-header font-bold uppercase tracking-[0.2em] text-[#B066FE] mb-1">Description</span>
-                    <textarea 
-                      {...register('description')}
-                      placeholder="Cryptographic significance..."
-                      className={`w-full bg-[#050505] border border-white/5 rounded-xl py-4 px-5 text-sm font-body text-white placeholder-slate-600 focus:outline-none focus:border-[#B066FE]/50 transition-colors shadow-inner min-h-[140px] resize-none ${errors.description ? 'border-red-500/30' : ''}`}
-                    />
-                    {errors.description && <p className="text-[9px] text-red-400 font-header uppercase tracking-widest pl-2 italic">{errors.description.message}</p>}
-                  </div>
-                </div>
-
-                <div className="flex justify-end mt-8 gap-4">
+              <div className="flex justify-end gap-4 mt-auto">
                   {attachedFiles.length > 0 && (
                     <button 
                       type="button"
@@ -282,7 +256,6 @@ const AttachFile: React.FC = () => {
                     Upload & Create
                   </Button>
                 </div>
-              </div>
             </form>
           ) : (
             <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

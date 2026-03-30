@@ -47,7 +47,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
             <div className="space-y-6">
               <div className="space-y-1">
                 <p className="text-[10px] font-header tracking-[0.2em] text-[#ffffff30] uppercase">Asset Name</p>
-                <p className="text-xl font-bold font-header text-white truncate">{asset.title || asset.file.split('/').pop()}</p>
+                <p className="text-xl font-bold font-header text-white truncate">{asset.title || asset.file?.split('/').pop() || 'Unknown Artifact'}</p>
               </div>
 
               <div className="space-y-1">
@@ -77,7 +77,8 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
               variant="primary" 
               onClick={() => {
                 onClose();
-                navigate(`/dashboard/asset/${asset.id}`, { state: { asset, license, owner, creator } }); 
+                const targetId = license?.id || asset.id;
+                navigate(`/dashboard/asset/${targetId}`, { state: { asset, license, owner, creator } }); 
               }}
               className="!px-10 italic uppercase font-header tracking-widest !text-[10px]"
             >

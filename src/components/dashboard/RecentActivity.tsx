@@ -1,36 +1,42 @@
-import { CheckCircle, ShoppingCart, Share2 } from 'lucide-react';
+import { CheckCircle, ShoppingCart, Share2, Send, Mail } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useActivityStore } from '../../store/activityStore';
+import { useEffect, useState } from 'react';
+
+const formatTimeAgo = (timestamp: number) => {
+  const diffInMinutes = Math.floor((Date.now() - timestamp) / 60000);
+  if (diffInMinutes < 1) return 'JUST NOW';
+  if (diffInMinutes < 60) return `${diffInMinutes} MINS AGO`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} HOURS AGO`;
+  return `${Math.floor(diffInHours / 24)} DAYS AGO`;
+};
+
+const getIconForType = (type: string) => {
+  switch (type) {
+    case 'registration':
+      return { icon: <Share2 className="w-5 h-5 text-primary" />, bg: 'bg-primary/10' };
+    case 'verification':
+      return { icon: <CheckCircle className="w-5 h-5 text-green-400" />, bg: 'bg-green-400/10' };
+    case 'purchase':
+      return { icon: <ShoppingCart className="w-5 h-5 text-orange-400" />, bg: 'bg-orange-400/10' };
+    case 'request_sent':
+      return { icon: <Send className="w-5 h-5 text-blue-400" />, bg: 'bg-blue-400/10' };
+    case 'request_received':
+      return { icon: <Mail className="w-5 h-5 text-yellow-400" />, bg: 'bg-yellow-400/10' };
+    default:
+      return { icon: <Share2 className="w-5 h-5 text-primary" />, bg: 'bg-primary/10' };
+  }
+};
 
 const RecentActivity: React.FC = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'registration',
-      title: 'Asset "Genesis_v01.pdf" registered',
-      subtitle: 'HASH: 0X82...F92A',
-      time: '14 MINS AGO',
-      icon: <Share2 className="w-5 h-5 text-primary" />,
-      iconBg: 'bg-primary/10',
-    },
-    {
-      id: 2,
-      type: 'verification',
-      title: 'Verification successful: contract_04.doc',
-      subtitle: 'GLOBAL CONSENSUS: 99.8%',
-      time: '2 HOURS AGO',
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
-      iconBg: 'bg-green-400/10',
-    },
-    {
-      id: 3,
-      type: 'purchase',
-      title: 'License purchased: Industrial_Blueprints_v4',
-      subtitle: 'BUYER: OXEF...1102',
-      time: '5 HOURS AGO',
-      icon: <ShoppingCart className="w-5 h-5 text-orange-400" />,
-      iconBg: 'bg-orange-400/10',
-    },
-  ];
+  const { activities } = useActivityStore();
+  
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="p-8 bg-[#ffffff0a] border border-[#ffffff10] rounded-[32px] overflow-hidden relative group shadow-2xl">
@@ -42,28 +48,35 @@ const RecentActivity: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {activities.map((activity) => (
-          <div key={activity.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 group/item cursor-pointer">
-            <div className="flex items-center gap-5">
-              <div className={`w-12 h-12 flex items-center justify-center rounded-xl ${activity.iconBg} border border-white/5 group-hover/item:scale-110 transition-transform`}>
-                {activity.icon}
-              </div>
-              <div>
-                <h5 className="text-sm font-medium text-[#ffffffcf] group-hover/item:text-white transition-colors">
-                  {activity.title}
-                </h5>
-                <p className="text-[10px] font-header tracking-wider text-[#ffffff30] group-hover/item:text-[#ffffff50]">
-                  {activity.subtitle}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="text-[9px] font-header tracking-tighter text-[#ffffff20] group-hover/item:text-primary transition-colors">
-                {activity.time}
-              </span>
-            </div>
+        {activities.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-xs font-header tracking-widest text-[#ffffff30] uppercase italic">No recent activity detected.</p>
           </div>
-        ))}
+        ) : activities.slice(0, 5).map((activity) => {
+          const { icon, bg } = getIconForType(activity.type);
+          return (
+            <div key={activity.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all duration-300 group/item cursor-pointer">
+              <div className="flex items-center gap-5">
+                <div className={`w-12 h-12 flex items-center justify-center rounded-xl ${bg} border border-white/5 group-hover/item:scale-110 transition-transform`}>
+                  {icon}
+                </div>
+                <div>
+                  <h5 className="text-sm font-medium text-[#ffffffcf] group-hover/item:text-white transition-colors">
+                    {activity.title}
+                  </h5>
+                  <p className="text-[10px] font-header tracking-wider text-[#ffffff30] group-hover/item:text-[#ffffff50]">
+                    {activity.subtitle}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-[9px] font-header tracking-tighter text-[#ffffff20] group-hover/item:text-primary transition-colors uppercase">
+                  {formatTimeAgo(activity.timestamp)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Decorative chart-like bars in bottom right */}

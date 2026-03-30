@@ -47,3 +47,8 @@ export const googleCallback = (params: GoogleCallbackParams): Promise<AuthTokenR
   api
     .get<AuthTokenResponse>('/auth/google/callback', { params })
     .then((r) => r.data);
+
+// ─── Wallet Balance ───────────────────────────────────────────────────────────
+
+export const getWalletBalance = (): Promise<import('../../types/auth.types').WalletBalance> =>
+  api.get<import('../../types/auth.types').WalletBalance>('/auth/wallet/balance').then((r) => r.data);

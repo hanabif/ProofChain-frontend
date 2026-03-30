@@ -10,8 +10,11 @@ interface ExploreProps {
 
 const Explore: React.FC<ExploreProps> = ({ isDashboard = false }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [filters] = useState({
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  
+  const [filters, setFilters] = useState({
     type: '',
     min_price: undefined as number | undefined,
     max_price: undefined as number | undefined,
@@ -19,20 +22,42 @@ const Explore: React.FC<ExploreProps> = ({ isDashboard = false }) => {
   });
 
   const { data, isLoading, isError, refetch } = useLicenseSearch({
-    q: searchQuery,
+    q: submittedQuery,
     page,
     page_size: 12,
     ...filters
   });
 
-  const licenses = data?.results || [];
+  let licenses = data?.results || [];
+
+  // Enforce functional local sorting and filtering just in case the backend query ignores params
+  if (filters.sort) {
+    licenses = [...licenses].sort((a, b) => {
+      if (filters.sort === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
+      if (filters.sort === 'price_desc') return Number(b.price || 0) - Number(a.price || 0);
+      if (filters.sort === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      if (filters.sort === 'oldest') return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      return 0;
+    });
+  }
+
+  if (filters.type) {
+    licenses = licenses.filter(l => l.type === filters.type);
+  }
+  if (filters.min_price !== undefined) {
+    licenses = licenses.filter(l => Number(l.price || 0) >= filters.min_price!);
+  }
+  if (filters.max_price !== undefined) {
+    licenses = licenses.filter(l => Number(l.price || 0) <= filters.max_price!);
+  }
+
   const totalCount = data?.count || 0;
   const totalPages = Math.ceil(totalCount / 12);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    refetch();
+    setSubmittedQuery(searchQuery);
   };
 
   return (
@@ -88,13 +113,120 @@ const Explore: React.FC<ExploreProps> = ({ isDashboard = false }) => {
         </form>
         
         {/* Dropdowns */}
-        <div className="flex items-center gap-4 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 hide-scrollbar rounded-full">
-          {['Type', 'Price Range', 'Sort By'].map((filter) => (
-            <button key={filter} className="flex items-center justify-between gap-8 bg-[#11111B] border border-white/5 rounded-full py-4 px-8 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg uppercase italic font-bold tracking-widest text-[10px]">
-              {filter}
+        <div className="flex items-center gap-4 w-full lg:w-auto overflow-visible rounded-full relative z-50">
+          
+          {/* SORT BY */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveDropdown(activeDropdown === 'sort' ? null : 'sort')}
+              className="flex items-center justify-between gap-4 bg-[#11111B] border border-white/5 rounded-full py-4 px-6 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg uppercase italic font-bold tracking-widest text-[10px]"
+            >
+              Sort By {filters.sort && `: ${filters.sort.replace('_', ' ')}`}
               <ChevronDown className="w-4 h-4 text-slate-500" />
             </button>
-          ))}
+            {activeDropdown === 'sort' && (
+              <div className="absolute top-full mt-2 left-0 w-48 bg-[#11111B] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1">
+                {[
+                  { label: 'Newest First', value: 'newest' },
+                  { label: 'Oldest First', value: 'oldest' },
+                  { label: 'Price: Low to High', value: 'price_asc' },
+                  { label: 'Price: High to Low', value: 'price_desc' }
+                ].map(opt => (
+                  <button 
+                    key={opt.value} 
+                    onClick={() => { setFilters(f => ({ ...f, sort: opt.value })); setActiveDropdown(null); setPage(1); }}
+                    className={`text-left px-4 py-3 rounded-xl text-xs uppercase italic tracking-widest font-header hover:bg-white/5 ${filters.sort === opt.value ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* TYPE */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+              className="flex items-center justify-between gap-4 bg-[#11111B] border border-white/5 rounded-full py-4 px-6 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg uppercase italic font-bold tracking-widest text-[10px]"
+            >
+              Type {filters.type && `: ${filters.type.replace('_', ' ')}`}
+              <ChevronDown className="w-4 h-4 text-slate-500" />
+            </button>
+            {activeDropdown === 'type' && (
+              <div className="absolute top-full mt-2 left-0 w-48 bg-[#11111B] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1">
+                {[
+                  { label: 'All Types', value: '' },
+                  { label: 'Exclusive', value: 'EXCLUSIVE' },
+                  { label: 'Non-Exclusive', value: 'NON_EXCLUSIVE' },
+                  { label: 'Personal', value: 'PERSONAL' }
+                ].map(opt => (
+                  <button 
+                    key={opt.label} 
+                    onClick={() => { setFilters(f => ({ ...f, type: opt.value })); setActiveDropdown(null); setPage(1); }}
+                    className={`text-left px-4 py-3 rounded-xl text-xs uppercase italic tracking-widest font-header hover:bg-white/5 ${filters.type === opt.value ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* PRICE RANGE */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
+              className="flex items-center justify-between gap-4 bg-[#11111B] border border-white/5 rounded-full py-4 px-6 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg uppercase italic font-bold tracking-widest text-[10px]"
+            >
+              Price range
+              <ChevronDown className="w-4 h-4 text-slate-500" />
+            </button>
+            {activeDropdown === 'price' && (
+              <div className="absolute top-full mt-2 right-0 w-64 bg-[#11111B] border border-white/10 rounded-2xl shadow-2xl p-4 z-50 flex flex-col gap-4">
+                <div className="flex gap-4">
+                  <div className="space-y-2 flex-1">
+                    <label className="text-[9px] uppercase tracking-widest text-slate-500 font-header">Min (ETH)</label>
+                    <input 
+                      type="number" 
+                      placeholder="0.0" 
+                      value={filters.min_price || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : undefined;
+                        setFilters(f => ({ ...f, min_price: val }));
+                        setPage(1);
+                      }}
+                      className="w-full bg-[#1A112B] border border-white/5 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50"
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <label className="text-[9px] uppercase tracking-widest text-slate-500 font-header">Max (ETH)</label>
+                    <input 
+                      type="number" 
+                      placeholder="100.0" 
+                      value={filters.max_price || ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : undefined;
+                        setFilters(f => ({ ...f, max_price: val }));
+                        setPage(1);
+                      }}
+                      className="w-full bg-[#1A112B] border border-white/5 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-2 border-t border-white/5 pt-4">
+                  <button 
+                    onClick={() => { setFilters(f => ({ ...f, min_price: undefined, max_price: undefined })); setPage(1); }}
+                    className="text-[10px] uppercase font-header tracking-widest text-slate-500 hover:text-white"
+                  >
+                    Clear Filter
+                  </button>
+                  <Button variant="primary" size="sm" onClick={() => setActiveDropdown(null)}>Apply</Button>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
@@ -117,7 +249,7 @@ const Explore: React.FC<ExploreProps> = ({ isDashboard = false }) => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-24">
             {licenses.map((license) => (
-              <LicenseCard key={license.id} {...license} isPublic={true} />
+              <LicenseCard key={license.id} {...license} isPublic={true} isDashboard={isDashboard} />
             ))}
           </div>
         )}
