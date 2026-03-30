@@ -19,6 +19,7 @@ import RequestLicense from '../pages/dashboard/RequestLicense';
 import EditLicense from '../pages/dashboard/EditLicense';
 import CreateLicenseDashboard from '../pages/dashboard/CreateLicenseDashboard';
 import Users from '../pages/dashboard/Users';
+import ExploreDashboard from '../pages/dashboard/ExploreDashboard';
 import MainLayout from '../components/layout/MainLayout';
 
 export default function AppRoutes() {
@@ -106,6 +107,12 @@ export default function AppRoutes() {
           <Route path="/dashboard/create-license" element={
             <ProtectedRoute>
               <CreateLicenseDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/dashboard/explore" element={
+            <ProtectedRoute>
+              <ExploreDashboard />
             </ProtectedRoute>
           } />
 
