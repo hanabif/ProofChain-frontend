@@ -19,7 +19,7 @@ const Users: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [, setLoadingDetails] = useState(false);
   const [selectedLicenseId, setSelectedLicenseId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const { user: currentUser } = useAuthStore();
