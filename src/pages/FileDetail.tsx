@@ -15,12 +15,15 @@ import { Footer } from '../components/layout/Footer';
 import { useAuthStore } from '../store/authStore';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useLicenseDetail } from '../hooks/licenses/useLicenses';
+import LicenseRequestModal from '../components/dashboard/LicenseRequestModal';
+import { useState } from 'react';
 
 const FileDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { user: currentUser } = useAuthStore();
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   
   const isDashboard = location.pathname.startsWith('/dashboard');
   
@@ -169,7 +172,7 @@ const FileDetail: React.FC = () => {
                       } else if (!currentUser) {
                         navigate(`/login?redirect=/file/${license.id}`);
                       } else {
-                        navigate(`/dashboard/license/${license.id}/requests`);
+                        setIsRequestModalOpen(true);
                       }
                     }}
                   >
@@ -189,6 +192,12 @@ const FileDetail: React.FC = () => {
         </main>
       </div>
       {!isDashboard && <Footer />}
+
+      <LicenseRequestModal 
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        license={license}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { useLicenseDraftStore } from '../store/licenseDraftStore';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { uploadAssetAndLicense, uploadAssetsToLicense } from '../api/endpoints/assets.api';
+import { useQueryClient } from '@tanstack/react-query';
 
 const attachFileSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -36,6 +37,7 @@ const AttachFile: React.FC = () => {
   const licenseId = searchParams.get('licenseId');
   const { draft, clearDraft } = useLicenseDraftStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -134,12 +136,14 @@ const AttachFile: React.FC = () => {
           fd.append('price', draft.price.toString());
         }
 
-        const res = await uploadAssetAndLicense(fd);
-        clearDraft();
-        navigate(`/dashboard/license/${res.id}/assets`);
-      } else {
-        navigate('/dashboard/assets');
-      }
+          const res = await uploadAssetAndLicense(fd);
+          clearDraft();
+          queryClient.invalidateQueries({ queryKey: ['licenses'] });
+          navigate(`/dashboard/license/${res.id}/assets`);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ['licenses'] });
+          navigate('/dashboard/assets');
+        }
       
     } catch (err: any) {
       console.error('Upload Error:', err?.response?.data || err);
