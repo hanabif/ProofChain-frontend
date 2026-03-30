@@ -17,7 +17,7 @@ export const ExploreCard: React.FC<ExploreCardProps> = ({ asset }) => {
 
   return (
     <div 
-      onClick={() => navigate(`/file/${asset.id || 1}`)}
+      onClick={() => navigate(`/file/${asset.id || 1}`, { state: { asset, owner: { username: asset.owner } } })}
       className="flex flex-col bg-[#11111B]/80 backdrop-blur-md border border-white/5 rounded-[32px] p-7 transition-all duration-300 hover:bg-[#11111B] hover:border-white/10 hover:-translate-y-2 shadow-xl group relative overflow-hidden z-20 cursor-pointer"
     >
       

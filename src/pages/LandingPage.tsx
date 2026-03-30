@@ -26,7 +26,7 @@ import { useAuthStore } from '../store/authStore';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { token } = useAuthStore();
+  const { token, logout } = useAuthStore();
 
   const handleCreateLicense = () => {
     if (token) {
@@ -62,20 +62,31 @@ const LandingPage: React.FC = () => {
         <div className="relative w-full max-w-7xl">
           {/* Top Right Header Buttons - Outside Hero Card to avoid clip-path */}
           <div className="absolute top-6 right-12 hidden md:flex items-center gap-[15px] z-30">
-             {token ? (
-               <Button variant="primary" size="sm" onClick={() => navigate('/dashboard/overview')}>
-                 Go to Dashboard
-               </Button>
-             ) : (
-               <>
-                 <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
-                    Login
-                 </Button>
-                 <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
-                    Register now
-                 </Button>
-               </>
-             )}
+            {token ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => alert(localStorage.getItem('token') || 'Token not found')}>
+                  Debug: Show Token
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => logout()}>
+                  Logout
+                </Button>
+                <Button variant="primary" size="sm" onClick={() => navigate('/dashboard/overview')}>
+                  Go to Dashboard
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" onClick={() => alert(localStorage.getItem('token') || 'No token found in localStorage')}>
+                  Debug: Show Token
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+                   Login
+                </Button>
+                <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
+                   Register now
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Main Hero Card */}

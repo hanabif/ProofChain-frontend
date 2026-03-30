@@ -4,13 +4,12 @@ import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import StatCard from '../../components/dashboard/StatCard';
 import OperationsTerminal from '../../components/dashboard/OperationsTerminal';
 import RecentActivity from '../../components/dashboard/RecentActivity';
-import assetsIcon from '../../assets/icons/assets.svg';
 import licenseIcon from '../../assets/icons/License.svg';
-import { useAssets } from '../../hooks/assets/useAssets';
+import { useLicenses } from '../../hooks/licenses/useLicenses';
 import { useTransactions } from '../../hooks/transactions/useTransactions';
 
 const DashboardOverview: React.FC = () => {
-  const { data: assets } = useAssets();
+  const { data: licenses } = useLicenses();
   const { data: transactions } = useTransactions();
 
   const totalEarnings = transactions?.reduce((acc, tx) => acc + Number(tx.amount || 0), 0) || 0;
@@ -47,9 +46,9 @@ const DashboardOverview: React.FC = () => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-12">
             <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
               <StatCard 
-                icon={assetsIcon} 
-                label="TOTAL ASSETS" 
-                value={assets?.length.toString() || "0"} 
+                icon={licenseIcon} 
+                label="TOTAL LICENSES" 
+                value={licenses?.length.toString() || "0"} 
               />
               <StatCard 
                 icon={licenseIcon} 

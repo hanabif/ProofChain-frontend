@@ -1,4 +1,6 @@
 import { FileText, Film, Image as ImageIcon, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 interface AssetCardProps {
   id: number | string;
@@ -8,9 +10,16 @@ interface AssetCardProps {
   status?: string;
   license: string;
   price: string;
+  asset?: any;
+  owner?: any;
 }
 
-const AssetCard: React.FC<AssetCardProps> = ({ type, name, date, status, license, price }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ id, type, name, date, status, license, price, asset, owner }) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate(`/dashboard/asset/${id}`, { state: { asset, owner } });
+  };
 
   const getIcon = () => {
     switch (type) {
@@ -21,7 +30,10 @@ const AssetCard: React.FC<AssetCardProps> = ({ type, name, date, status, license
   };
 
   return (
-    <div className="bg-[#ffffff05] border border-[#ffffff10] rounded-[32px] p-6 space-y-6 relative group hover:bg-[#ffffff08] hover:border-primary/30 transition-all duration-500 shadow-xl">
+    <div 
+      onClick={handleNavigate}
+      className="bg-[#ffffff05] border border-[#ffffff10] rounded-[32px] p-6 space-y-6 relative group hover:bg-[#ffffff08] hover:border-primary/30 transition-all duration-500 shadow-xl cursor-pointer"
+    >
       {/* Top Section */}
       <div className="flex items-center justify-between">
         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center border border-white/5">

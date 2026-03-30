@@ -10,6 +10,7 @@ import {
 import { Button } from '../components/ui/Button';
 import Sidebar from '../components/dashboard/Sidebar';
 import DashboardNavbar from '../components/dashboard/DashboardNavbar';
+import { useAuthStore } from '../store/authStore';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAsset } from '../hooks/assets/useAsset';
 import { useLicense } from '../hooks/licenses/useLicenses';
@@ -22,10 +23,14 @@ const FileDetail: React.FC = () => {
 
   const { data: fetchAsset, isLoading: assetLoading, isError: assetError } = useAsset(id);
   const fetchLicense = useLicense(fetchAsset?.licenseId);
-
+  const { user: currentUser } = useAuthStore();
+  
   // Prioritize passed state to fix the "undefined" crash and ensure instant loading
   const asset = state?.asset || fetchAsset;
   const license = state?.license || fetchLicense;
+  const owner = state?.owner;
+
+  const isOwner = currentUser && owner && (currentUser.id === owner.id || currentUser.username === owner.username);
 
   const isLoading = assetLoading && !asset;
   const isError = assetError && !asset;
@@ -161,9 +166,9 @@ const FileDetail: React.FC = () => {
                   size="lg" 
                   fullWidth 
                   className="!py-6 !text-[11px] font-black tracking-[0.2em] italic uppercase shadow-2xl"
-                  onClick={() => navigate(`/dashboard/license/${asset?.licenseId}/assets`)}
+                  onClick={() => navigate(isOwner ? '/dashboard/users' : `/dashboard/license/${asset?.licenseId}/assets`)}
                 >
-                  Request License
+                  {isOwner ? 'Browse Users to Invite' : 'Request License'}
                 </Button>
                 
                 <div className="flex flex-col items-center mt-8 gap-2">
