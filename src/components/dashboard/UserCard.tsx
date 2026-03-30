@@ -10,7 +10,10 @@ interface UserCardProps {
 
 export const UserCard: React.FC<UserCardProps> = ({ user, onInvite }) => {
   return (
-    <div className="flex flex-col bg-[#11111B]/80 backdrop-blur-md border border-white/5 rounded-[32px] p-7 transition-all duration-300 hover:bg-[#11111B] hover:border-primary/30 hover:-translate-y-2 shadow-xl group relative overflow-hidden z-20">
+    <div 
+      onClick={() => onInvite(user)}
+      className="flex flex-col bg-[#11111B]/80 backdrop-blur-md border border-white/5 rounded-[32px] p-7 transition-all duration-300 hover:bg-[#11111B] hover:border-primary/30 hover:-translate-y-2 shadow-xl group relative overflow-hidden z-20 cursor-pointer"
+    >
       
       {/* Background decoration */}
       <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500"></div>
@@ -43,7 +46,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onInvite }) => {
           <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 shrink-0">
             <Shield className="w-3.5 h-3.5" />
           </div>
-          <span className="text-[10px] font-mono truncate">{user.wallet_address}</span>
+          <p className="text-[10px] font-mono truncate max-w-[200px]">{user.wallet_address}</p>
         </div>
       </div>
 
@@ -53,12 +56,15 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onInvite }) => {
       {/* Action Footer */}
       <div className="mt-6">
         <Button 
-          variant="primary" 
+          variant="outline" 
           fullWidth 
-          className="!py-3.5 !text-[10px] font-black tracking-[0.2em] italic uppercase"
-          onClick={() => onInvite(user)}
+          className="!py-3.5 !text-[10px] font-black tracking-[0.2em] italic uppercase group-hover:bg-primary group-hover:text-white transition-all duration-500"
+          onClick={(e) => {
+            e.stopPropagation();
+            onInvite(user);
+          }}
         >
-          Invite to License
+          View Profile
         </Button>
       </div>
     </div>
