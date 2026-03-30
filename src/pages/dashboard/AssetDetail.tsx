@@ -82,7 +82,7 @@ const AssetDetail: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
                       <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">Date Created</span>
-                      <span className="text-sm font-body text-white">{new Date(asset.createdAt).toLocaleDateString()}</span>
+                      <span className="text-sm font-body text-white">{new Date(asset.createdAt || '').toLocaleDateString()}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-white/5">
                       <span className="text-[10px] font-header tracking-[0.2em] text-[#ffffff40] uppercase">Status</span>

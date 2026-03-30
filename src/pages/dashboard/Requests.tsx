@@ -199,7 +199,7 @@ const Requests: React.FC = () => {
                             <h4 className="text-sm font-bold font-header text-white tracking-wide">
                               {activeTab === 'RECEIVED' ? req.requesterName : (req.receiverName || 'Unknown Recipient')}
                             </h4>
-                            <span className="text-[9px] font-body text-[#ffffff20]">{new Date(req.createdAt).toLocaleString()}</span>
+                            <span className="text-[9px] font-body text-[#ffffff20]">{new Date(req.createdAt || '').toLocaleString()}</span>
                           </div>
                           <p className="text-xs font-body text-[#ffffff60] leading-relaxed italic border-l border-white/5 pl-4">
                             "{req.message}"

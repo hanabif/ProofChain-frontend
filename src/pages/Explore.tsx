@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 const Explore: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
+  const [filters] = useState({
     type: '',
     min_price: undefined as number | undefined,
     max_price: undefined as number | undefined,

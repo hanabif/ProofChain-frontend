@@ -130,7 +130,7 @@ const FileDetail: React.FC = () => {
                   <InfoBox label="Registered Owner" value={license.owner?.username || 'System Node'} />
                   <InfoBox label="License Type" value={license.type || 'UNSPECIFIED'} />
                   <InfoBox label="Asset Count" value={license.assets?.length?.toString() || '0'} />
-                  <InfoBox label="Creation Date" value={displayDate ? new Date(displayDate).toLocaleString() : 'Recent Block'} />
+                  <InfoBox label="Creation Date" value={displayDate ? new Date(displayDate || '').toLocaleString() : 'Recent Block'} />
                 </div>
               </div>
 
