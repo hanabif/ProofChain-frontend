@@ -9,6 +9,19 @@ export const getRequests = async (): Promise<Request[]> => {
   return requests;
 };
 
+export const createRequest = async (data: Partial<Request>): Promise<Request> => {
+  await delay(1000);
+  const newRequest: Request = {
+    id: `r${Date.now()}`,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    ...data,
+  } as Request;
+  
+  requests = [newRequest, ...requests];
+  return newRequest;
+};
+
 export const approveRequest = async (id: string): Promise<Request> => {
   await delay(1000);
   const index = requests.findIndex((r) => r.id === id);
@@ -25,6 +38,16 @@ export const declineRequest = async (id: string): Promise<Request> => {
   if (index === -1) throw new Error("Request not found");
   
   const updatedRequest: Request = { ...requests[index], status: "declined" };
+  requests = requests.map((r) => (r.id === id ? updatedRequest : r));
+  return updatedRequest;
+};
+
+export const cancelRequest = async (id: string): Promise<Request> => {
+  await delay(1000);
+  const index = requests.findIndex((r) => r.id === id);
+  if (index === -1) throw new Error("Request not found");
+  
+  const updatedRequest: Request = { ...requests[index], status: "cancelled" };
   requests = requests.map((r) => (r.id === id ? updatedRequest : r));
   return updatedRequest;
 };

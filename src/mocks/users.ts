@@ -1,0 +1,48 @@
+import type { User } from "../types/auth.types";
+
+export const mockUsers: User[] = [
+  {
+    id: "u1",
+    first_name: "John",
+    last_name: "Doe",
+    username: "johndoe",
+    email: "john@example.com",
+    wallet_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    is_active: true,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "u2",
+    first_name: "Jane",
+    last_name: "Smith",
+    username: "janesmith",
+    email: "jane@example.com",
+    wallet_address: "0x321a35Cc6634C0532925a3b844Bc454e4438f44e",
+    is_active: true,
+    created_at: "2026-01-02T00:00:00Z",
+    updated_at: "2026-01-02T00:00:00Z",
+  },
+  {
+    id: "u3",
+    first_name: "Bob",
+    last_name: "Johnson",
+    username: "bobjohnson",
+    email: "bob@example.com",
+    wallet_address: "0x987b35Cc6634C0532925a3b844Bc454e4438f44e",
+    is_active: true,
+    created_at: "2026-01-03T00:00:00Z",
+    updated_at: "2026-01-03T00:00:00Z",
+  },
+  {
+    id: "u4",
+    first_name: "Alice",
+    last_name: "Williams",
+    username: "alicew",
+    email: "alice@example.com",
+    wallet_address: "0x555c35Cc6634C0532925a3b844Bc454e4438f44e",
+    is_active: true,
+    created_at: "2026-01-04T00:00:00Z",
+    updated_at: "2026-01-04T00:00:00Z",
+  },
+];

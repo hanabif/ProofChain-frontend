@@ -6,7 +6,7 @@ import licenseIcon from '../../assets/icons/License.svg';
 import transactionsIcon from '../../assets/icons/transactions.svg';
 import settingsIcon from '../../assets/icons/settings.svg';
 import logoIcon from '../../assets/images/logo.svg';
-import { LogOut } from 'lucide-react';
+import { LogOut, Users } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
@@ -34,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
     { name: 'REQUESTS', icon: requestIcon, path: '/dashboard/requests' },
     { name: 'LICENSES', icon: licenseIcon, path: '/dashboard/licenses' },
     { name: 'TRANSACTIONS', icon: transactionsIcon, path: '/dashboard/transactions' },
+    { name: 'USERS', icon: '', lucideIcon: <Users className="w-6 h-6" />, path: '/dashboard/users' },
     { name: 'SETTINGS', icon: settingsIcon, path: '/dashboard/settings' },
   ];
 
@@ -70,11 +71,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
               w-10 h-10 flex items-center justify-center rounded-lg transition-transform group-hover:scale-110
               ${isCollapsed ? 'mx-auto' : ''}
             `}>
-              <img 
-                src={item.icon} 
-                alt={item.name} 
-                className={`w-6 h-6 ${isCollapsed ? 'opacity-80' : ''}`} 
-              />
+              {item.lucideIcon ? (
+                <div className={`${isCollapsed ? 'opacity-80' : ''} text-gray-400 group-hover:text-white transition-colors`}>
+                  {item.lucideIcon}
+                </div>
+              ) : (
+                <img 
+                  src={item.icon} 
+                  alt={item.name} 
+                  className={`w-6 h-6 ${isCollapsed ? 'opacity-80' : ''}`} 
+                />
+              )}
             </div>
             {!isCollapsed && (
               <span className="text-[11px] font-bold tracking-widest font-header">

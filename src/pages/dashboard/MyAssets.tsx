@@ -6,10 +6,12 @@ import { Button } from '../../components/ui/Button';
 import { Search, Plus, Filter, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAssets } from '../../hooks/assets/useAssets';
+import { useAuthStore } from '../../store/authStore';
 
 const MyAssets: React.FC = () => {
   const navigate = useNavigate();
   const { data: assets, isLoading, isError, refetch } = useAssets();
+  const { user: currentUser } = useAuthStore();
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
@@ -102,6 +104,8 @@ const MyAssets: React.FC = () => {
                   status={asset.status as any}
                   license={asset.licenseId || 'Unassigned'}
                   price="--"
+                  asset={asset}
+                  owner={currentUser}
                 />
               ))
             )}

@@ -1,57 +1,80 @@
-import React from 'react';
-import { Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ExploreCard } from '../components/ui/ExploreCard';
-
-// Mock Data
-const MOCK_ASSETS = [
-  { id: 1, title: "NeuralMesh_v4...", desc: "High-fidelity topological data structure for autonomous...", owner: "0x71C...4e8B", price: "1.45" },
-  { id: 2, title: "Quantum_Encr...", desc: "Post-quantum secure cryptographic primitive for...", owner: "0x2A9...fF31", price: "3.20" },
-  { id: 3, title: "Spectra_Audio...", desc: "Spatial audio synthesis library optimized for immersive metaverse...", owner: "0xde0...8821", price: "0.85" },
-  { id: 4, title: "BlockSchema_l...", desc: "Standardized financial ledger schema for multi-chain settlement...", owner: "0x883...cc91", price: "5.12" },
-  { id: 5, title: "Aether_Logic_...", desc: "Optimized logic gate configurations for high-frequency algorithmic...", owner: "0x341...112c", price: "2.10" },
-  { id: 6, title: "HyperStream_...", desc: "Kernel-level optimization assets for distributed operating systems.", owner: "0x992...dD10", price: "1.88" },
-  { id: 7, title: "SecureEnclave...", desc: "Hardware abstraction layer for trusted execution environment...", owner: "0xbb1...4a32", price: "6.40" },
-  { id: 8, title: "GeoScale_Data...", desc: "Anonymized global mobility data for sustainable urban planning AI...", owner: "0xff3...99ee", price: "0.95" }
-];
+import React, { useState } from 'react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import LicenseCard from '../components/dashboard/LicenseCard';
+import { useLicenseSearch } from '../hooks/licenses/useLicenseSearch';
+import { Button } from '../components/ui/Button';
 
 const Explore: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    type: '',
+    min_price: undefined as number | undefined,
+    max_price: undefined as number | undefined,
+    sort: 'newest'
+  });
+
+  const { data, isLoading, isError, refetch } = useLicenseSearch({
+    q: searchQuery,
+    page,
+    page_size: 12,
+    ...filters
+  });
+
+  const licenses = data?.results || [];
+  const totalCount = data?.count || 0;
+  const totalPages = Math.ceil(totalCount / 12);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    refetch();
+  };
+
   return (
-    <div className="min-h-screen bg-[#0B0B14] text-white pt-40 pb-32 px-6 md:px-12 lg:px-24">
+    <div className="min-h-screen bg-[#0B0B14] text-white pt-40 pb-32 px-6 md:px-12 lg:px-24 relative overflow-hidden">
       
+      {/* GLOBAL BACKGROUND HEX GRID overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-0">
+        <div className="absolute inset-0 bg-[url('/assets/images/Group.svg')] bg-cover" />
+      </div>
+
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-16">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-16 relative z-10">
         <div>
-          <h1 className="text-5xl md:text-6xl font-header font-black text-white mb-6 tracking-tighter">Explore</h1>
-          <p className="text-slate-400 font-body text-sm max-w-lg leading-relaxed font-light">
-            Discover verified digital assets available for licensing. Secure your intellectual property on-chain.
+          <h1 className="text-5xl md:text-6xl font-header font-black text-white mb-6 tracking-tighter uppercase italic">Explore</h1>
+          <p className="text-slate-400 font-body text-sm max-w-lg leading-relaxed font-light italic">
+            Discover verified digital licenses for high-value assets. Secure your intellectual property on the immutable ledger.
           </p>
         </div>
         
         {/* Verified Assets Badge */}
         <div className="flex items-center gap-3 bg-[#11111B]/80 backdrop-blur-md border border-white/5 py-3 px-6 md:py-4 md:px-8 rounded-2xl h-fit shadow-xl mt-2">
           <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_12px_#6f26ff]" />
-          <span className="font-header font-black text-lg md:text-xl text-white tracking-widest whitespace-nowrap">
-            1,240 <span className="text-[9px] md:text-[10px] text-slate-500 tracking-widest ml-1 md:ml-2 font-body font-normal">VERIFIED ASSETS</span>
+          <span className="font-header font-black text-lg md:text-xl text-white tracking-widest whitespace-nowrap italic">
+            {totalCount.toLocaleString()} <span className="text-[9px] md:text-[10px] text-slate-500 tracking-widest ml-1 md:ml-2 font-body font-normal not-italic">VERIFIED LICENSES</span>
           </span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col lg:flex-row items-center gap-6 mb-16 w-full">
+      <div className="flex flex-col lg:flex-row items-center gap-6 mb-16 w-full relative z-10">
         {/* Search Input */}
-        <div className="relative flex-grow w-full lg:w-auto">
+        <form onSubmit={handleSearch} className="relative flex-grow w-full lg:w-auto">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5 pointer-events-none" />
           <input 
             type="text" 
             placeholder="Search by title, keyword, or hash..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#11111B] border border-white/5 rounded-full py-4 pl-14 pr-6 text-sm font-body text-white placeholder-slate-500 focus:outline-none focus:border-primary/50 transition-colors shadow-lg"
           />
-        </div>
+        </form>
         
         {/* Dropdowns */}
         <div className="flex items-center gap-4 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 hide-scrollbar rounded-full">
-          {['File Type', 'Price Range', 'Sort By'].map((filter) => (
-            <button key={filter} className="flex items-center justify-between gap-8 bg-[#11111B] border border-white/5 rounded-full py-4 px-8 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg">
+          {['Type', 'Price Range', 'Sort By'].map((filter) => (
+            <button key={filter} className="flex items-center justify-between gap-8 bg-[#11111B] border border-white/5 rounded-full py-4 px-8 text-sm font-body text-slate-300 hover:bg-white/10 transition-colors whitespace-nowrap shadow-lg uppercase italic font-bold tracking-widest text-[10px]">
               {filter}
               <ChevronDown className="w-4 h-4 text-slate-500" />
             </button>
@@ -60,22 +83,54 @@ const Explore: React.FC = () => {
       </div>
 
       {/* Asset Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-24 relative">
-        {MOCK_ASSETS.map((asset) => (
-          <ExploreCard key={asset.id} asset={asset} />
-        ))}
+      <div className="relative z-10 min-h-[400px]">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 space-y-4">
+            <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            <p className="text-[#ffffff20] font-header tracking-widest text-xs uppercase italic">Syncing global register...</p>
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-32 space-y-6">
+            <p className="text-red-400 font-header tracking-widest text-xs uppercase italic text-center">Protocol failure detected.</p>
+            <Button variant="outline" onClick={() => refetch()} clipped={false}>Retry sync</Button>
+          </div>
+        ) : licenses.length === 0 ? (
+          <div className="text-center py-32 border border-dashed border-white/10 rounded-[40px]">
+            <p className="text-[#ffffff20] font-header tracking-[0.2em] italic uppercase">No licenses matching your criteria</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-24">
+            {licenses.map((license) => (
+              <LicenseCard key={license.id} {...license} isPublic={true} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-center gap-3 relative z-10 w-full">
-         <PageButton icon={<ChevronLeft className="w-4 h-4" />} />
-         <PageButton active text="1" />
-         <PageButton text="2" />
-         <PageButton text="3" />
-         <span className="text-slate-600 mx-1 md:mx-2 tracking-widest">...</span>
-         <PageButton text="14" />
-         <PageButton icon={<ChevronRight className="w-4 h-4" />} />
-      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 relative z-10 w-full mt-12">
+          <PageButton 
+            icon={<ChevronLeft className="w-4 h-4" />} 
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          />
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => (
+            <PageButton 
+              key={i + 1}
+              active={page === i + 1} 
+              text={(i + 1).toString()} 
+              onClick={() => setPage(i + 1)}
+            />
+          ))}
+          {totalPages > 5 && <span className="text-slate-600 mx-1 md:mx-2 tracking-widest">...</span>}
+          <PageButton 
+            icon={<ChevronRight className="w-4 h-4" />} 
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          />
+        </div>
+      )}
 
       {/* Decorative dashed circle from bottom right */}
       <div className="fixed bottom-[-200px] right-[-200px] w-[500px] h-[500px] pointer-events-none opacity-20 -z-0">
@@ -87,18 +142,20 @@ const Explore: React.FC = () => {
 
 // --- Subcomponents ---
 
-const PageButton = ({ text, active, icon }: { text?: string, active?: boolean, icon?: React.ReactNode }) => {
+const PageButton = ({ text, active, icon, onClick, disabled }: { text?: string, active?: boolean, icon?: React.ReactNode, onClick?: () => void, disabled?: boolean }) => {
   return (
-    <button className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xs font-body transition-colors duration-300 ${
-      active 
-        ? 'bg-primary/20 text-primary border border-primary/50 shadow-[0_0_15px_rgba(111,38,255,0.2)]' 
-        : 'bg-[#11111B] border border-white/5 text-slate-400 hover:text-white hover:border-white/20 shadow-lg'
-    }`}>
+    <button 
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xs font-body transition-colors duration-300 disabled:opacity-20 disabled:cursor-not-allowed ${
+        active 
+          ? 'bg-primary text-white shadow-[0_0_20px_rgba(111,38,255,0.4)] border border-primary/50' 
+          : 'bg-[#11111B] border border-white/5 text-slate-400 hover:text-white hover:border-white/20 shadow-lg'
+      }`}
+    >
       {text || icon}
     </button>
   );
 };
-
-
 
 export default Explore;

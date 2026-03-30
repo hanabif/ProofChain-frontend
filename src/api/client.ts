@@ -1,8 +1,15 @@
 import axios from "axios";
 
+// Public instance (no authorization header)
+export const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+});
+
+// Authenticated instance
 export const api = axios.create({
-  baseURL: "https://proofchain-api.onrender.com",
-  withCredentials: true, // if using cookies
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
