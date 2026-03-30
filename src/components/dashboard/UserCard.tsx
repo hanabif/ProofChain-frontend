@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Shield, CheckCircle2 } from 'lucide-react';
+import { Shield, CheckCircle2 } from 'lucide-react';
 import type { User } from '../../types/auth.types';
 import { Button } from '../ui/Button';
 
@@ -39,12 +39,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onInvite }) => {
       </div>
 
       <div className="space-y-4 mb-8 flex-1">
-        <div className="flex items-center gap-3 text-slate-400 group-hover:text-slate-300 transition-colors">
-          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 shrink-0">
-            <Mail className="w-3.5 h-3.5" />
-          </div>
-          <span className="text-xs font-body truncate">{user.email}</span>
-        </div>
         <div className="flex items-center gap-3 text-slate-400">
           <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 shrink-0">
             <Shield className="w-3.5 h-3.5" />

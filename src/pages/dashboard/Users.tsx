@@ -23,26 +23,39 @@ const Users: React.FC = () => {
   const { user: currentUser } = useAuthStore();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchLicenses = async () => {
       try {
-        const [usersData, licensesData] = await Promise.all([
-          getUsers(),
-          getLicenses()
-        ]);
-        // Filter out current user from the list
-        setUsers(usersData.filter(u => u.id !== currentUser?.id));
+        const licensesData = await getLicenses();
         setLicenses(licensesData);
       } catch (err) {
-        console.error('Failed to fetch users or licenses', err);
-        toast.error('Initialization protocol failed.');
+        console.error('Failed to fetch licenses', err);
+      }
+    };
+    fetchLicenses();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        // Fetch users using the search query with a limit of 50
+        const usersData = await getUsers(searchQuery || undefined, 50);
+        // Filter out current user from the list if available
+        setUsers(currentUser ? usersData.filter(u => u.id !== currentUser.id) : usersData);
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+        toast.error('Failed to synchronize user registry.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [currentUser]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentUser, searchQuery]);
 
   const handleInviteClick = (user: User) => {
     setSelectedUser(user);
@@ -63,9 +76,9 @@ const Users: React.FC = () => {
         licenseId: selectedLicenseId,
         assetId: license?.assets[0]?.id || 'unknown',
         requesterName: `${currentUser.first_name} ${currentUser.last_name}`.trim() || currentUser.username,
-        requesterEmail: currentUser.email,
-        receiverName: `${selectedUser.first_name} ${selectedUser.last_name}`.trim() || selectedUser.username,
-        receiverEmail: selectedUser.email,
+        requesterEmail: currentUser.email || '',
+        receiverName: selectedUser.full_name || `${selectedUser.first_name} ${selectedUser.last_name}`.trim() || selectedUser.username,
+        receiverEmail: selectedUser.email || '',
         message: `Owner ${currentUser.username} is inviting you to license their asset.`,
         type: 'INVITATION',
       });
@@ -79,11 +92,6 @@ const Users: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white">
@@ -123,8 +131,8 @@ const Users: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map(user => (
+              {users.length > 0 ? (
+                users.map(user => (
                   <UserCard key={user.id} user={user} onInvite={handleInviteClick} />
                 ))
               ) : (

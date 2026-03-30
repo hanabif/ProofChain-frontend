@@ -51,8 +51,11 @@ export const createRequest = async (data: Partial<Request>): Promise<Request> =>
   // Map frontend fields back to backend if necessary
   const payload = {
     license: data.licenseId,
+    target_user: data.receiverId,
     message: data.message,
     type: data.type,
+    requester_name: data.requesterName,
+    requester_email: data.requesterEmail,
     // Add other fields as per backend requirements
   };
   

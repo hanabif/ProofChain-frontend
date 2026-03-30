@@ -4,12 +4,13 @@ export interface User {
   id: string;
   first_name: string;
   last_name: string;
+  full_name?: string;
   username: string;
-  email: string;
+  email?: string;
   wallet_address: string;
-  is_active: boolean;
+  is_active?: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 // ─── Token Response (login / register / google callback) ──────────────────────
