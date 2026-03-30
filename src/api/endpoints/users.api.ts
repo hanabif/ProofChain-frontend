@@ -1,13 +1,15 @@
-import { delay } from "../../services/api";
+import { api } from "../client";
 import type { User } from "../../types/auth.types";
-import { mockUsers } from "../../mocks/users";
 
-export const getUsers = async (): Promise<User[]> => {
-  await delay(800);
-  return mockUsers;
+export const getUsers = async (q?: string, limit = 20): Promise<User[]> => {
+  const params: any = { limit };
+  if (q) params.q = q;
+  
+  const response = await api.get<User[]>("/auth/users/search", { params });
+  return response.data;
 };
 
 export const getUserById = async (id: string): Promise<User | undefined> => {
-  await delay(500);
-  return mockUsers.find(u => u.id === id);
+  const response = await api.get<User>(`/auth/users/${id}`);
+  return response.data;
 };

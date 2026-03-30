@@ -1,53 +1,28 @@
-import { delay } from "./api";
 import type { Request } from "../types/request";
-import { mockRequests } from "../mocks/requests";
-
-let requests = [...mockRequests];
+import * as requestsApi from "../api/endpoints/requests.api";
 
 export const getRequests = async (): Promise<Request[]> => {
-  await delay(800);
-  return requests;
+  const response = await requestsApi.getRequests(1, 100); // Fetch a larger batch for the service
+  return response.results;
 };
 
 export const createRequest = async (data: Partial<Request>): Promise<Request> => {
-  await delay(1000);
-  const newRequest: Request = {
-    id: `r${Date.now()}`,
-    status: "pending",
-    createdAt: new Date().toISOString()?? '',
-    ...data,
-  } as Request;
-  
-  requests = [newRequest, ...requests];
-  return newRequest;
+  return await requestsApi.createRequest(data);
 };
 
 export const approveRequest = async (id: string): Promise<Request> => {
-  await delay(1000);
-  const index = requests.findIndex((r) => r.id === id);
-  if (index === -1) throw new Error("Request not found");
-  
-  const updatedRequest: Request = { ...requests[index], status: "approved" };
-  requests = requests.map((r) => (r.id === id ? updatedRequest : r));
-  return updatedRequest;
+  return await requestsApi.approveRequest(id);
 };
 
 export const declineRequest = async (id: string): Promise<Request> => {
-  await delay(1000);
-  const index = requests.findIndex((r) => r.id === id);
-  if (index === -1) throw new Error("Request not found");
-  
-  const updatedRequest: Request = { ...requests[index], status: "declined" };
-  requests = requests.map((r) => (r.id === id ? updatedRequest : r));
-  return updatedRequest;
+  return await requestsApi.rejectRequest(id);
 };
 
-export const cancelRequest = async (id: string): Promise<Request> => {
-  await delay(1000);
-  const index = requests.findIndex((r) => r.id === id);
-  if (index === -1) throw new Error("Request not found");
-  
-  const updatedRequest: Request = { ...requests[index], status: "cancelled" };
-  requests = requests.map((r) => (r.id === id ? updatedRequest : r));
-  return updatedRequest;
+export const rejectRequest = async (id: string): Promise<Request> => {
+  return await requestsApi.rejectRequest(id);
 };
+
+export const cancelRequest = async (id: string): Promise<void> => {
+  return await requestsApi.cancelRequest(id);
+};
+

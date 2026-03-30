@@ -6,7 +6,7 @@ import licenseIcon from '../../assets/icons/License.svg';
 import transactionsIcon from '../../assets/icons/transactions.svg';
 import settingsIcon from '../../assets/icons/settings.svg';
 import logoIcon from '../../assets/images/logo.svg';
-import { LogOut, Users } from 'lucide-react';
+import { LogOut, Users, Compass } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 interface SidebarProps {
@@ -35,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
     { name: 'LICENSES', icon: licenseIcon, path: '/dashboard/licenses' },
     { name: 'TRANSACTIONS', icon: transactionsIcon, path: '/dashboard/transactions' },
     { name: 'USERS', icon: '', lucideIcon: <Users className="w-6 h-6" />, path: '/dashboard/users' },
+    { name: 'EXPLORE LICENSES', icon: '', lucideIcon: <Compass className="w-6 h-6" />, path: '/dashboard/explore' },
     { name: 'SETTINGS', icon: settingsIcon, path: '/dashboard/settings' },
   ];
 

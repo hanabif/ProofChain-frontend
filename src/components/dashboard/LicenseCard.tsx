@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
 import type { License } from '../../types/license';
+import LicenseRequestModal from './LicenseRequestModal';
 
 interface LicenseCardProps extends License {
   onViewRequests?: () => void;
@@ -19,19 +20,21 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
   assets = [],
   requestCount = 0,
   isPublic = false,
+  owner,
 }) => {
   const displayPrice = !price || price === '0' || price === 0 ? 'FREE' : `${price} ETH`;
   const assetCount = assets.length;
 
   const navigate = useNavigate();
   const { token } = useAuthStore();
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
   const handleRequestLicense = () => {
     if (!token) {
       navigate(`/login?redirect=/file/${id}`);
       return;
     }
-    navigate(`/dashboard/license/${id}/requests`);
+    setIsRequestModalOpen(true);
   };
 
   return (
@@ -140,6 +143,17 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
           )}
         </div>
       )}
+
+      <LicenseRequestModal 
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        license={{
+          id,
+          title,
+          owner,
+          assets
+        }}
+      />
     </div>
   );
 };

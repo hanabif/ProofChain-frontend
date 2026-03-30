@@ -3,8 +3,8 @@ import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 import { UserCard } from '../../components/dashboard/UserCard';
 import { Button } from '../../components/ui/Button';
-import { Search, Loader2, X, Shield, ArrowRight } from 'lucide-react';
-import { getUsers } from '../../services/userService';
+import { Search, Loader2, X, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { getUsers, getUserById } from '../../services/userService';
 import { getLicenses } from '../../services/licenseService';
 import { createRequest } from '../../services/requestService';
 import { useAuthStore } from '../../store/authStore';
@@ -18,34 +18,72 @@ const Users: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [, setLoadingDetails] = useState(false);
   const [selectedLicenseId, setSelectedLicenseId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const { user: currentUser } = useAuthStore();
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchLicenses = async () => {
       try {
-        const [usersData, licensesData] = await Promise.all([
-          getUsers(),
-          getLicenses()
-        ]);
-        // Filter out current user from the list
-        setUsers(usersData.filter(u => u.id !== currentUser?.id));
+        const licensesData = await getLicenses();
         setLicenses(licensesData);
       } catch (err) {
-        console.error('Failed to fetch users or licenses', err);
-        toast.error('Initialization protocol failed.');
+        console.error('Failed to fetch licenses', err);
+      }
+    };
+    fetchLicenses();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // If no search query, clear users and stop loading
+      if (!searchQuery.trim()) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // Fetch users using the search query with a limit of 50
+        const usersData = await getUsers(searchQuery, 50);
+        // Filter out current user from the list if available
+        setUsers(currentUser ? usersData.filter(u => u.id !== currentUser.id) : usersData);
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+        toast.error('Failed to synchronize user registry.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [currentUser]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentUser, searchQuery]);
+
+  const handleCardClick = async (user: User) => {
+    setViewingUser(user);
+    setLoadingDetails(true);
+    try {
+      const response = await getUserById(user.id);
+      if (response) {
+        setViewingUser(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user details', err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
 
   const handleInviteClick = (user: User) => {
     setSelectedUser(user);
+    setViewingUser(null);
     if (licenses.length > 0) {
       setSelectedLicenseId(licenses[0].id);
     }
@@ -63,9 +101,9 @@ const Users: React.FC = () => {
         licenseId: selectedLicenseId,
         assetId: license?.assets[0]?.id || 'unknown',
         requesterName: `${currentUser.first_name} ${currentUser.last_name}`.trim() || currentUser.username,
-        requesterEmail: currentUser.email,
-        receiverName: `${selectedUser.first_name} ${selectedUser.last_name}`.trim() || selectedUser.username,
-        receiverEmail: selectedUser.email,
+        requesterEmail: currentUser.email || '',
+        receiverName: selectedUser.full_name || `${selectedUser.first_name} ${selectedUser.last_name}`.trim() || selectedUser.username,
+        receiverEmail: selectedUser.email || '',
         message: `Owner ${currentUser.username} is inviting you to license their asset.`,
         type: 'INVITATION',
       });
@@ -79,11 +117,6 @@ const Users: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white">
@@ -104,16 +137,20 @@ const Users: React.FC = () => {
               </p>
             </div>
 
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff20]" />
-              <input 
-                type="text" 
-                placeholder="Search purchasers by name, email, or handle..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#ffffff05] border border-[#ffffff10] rounded-2xl py-3.5 pl-12 pr-6 text-xs font-body text-white placeholder-[#ffffff20] focus:outline-none focus:border-primary/50 transition-all shadow-inner"
-              />
-            </div>
+            {!searchQuery.trim() ? (
+              <div className="hidden md:block w-96" /> // Spacer to keep layout consistent
+            ) : (
+              <div className="relative w-full md:w-96 animate-in fade-in slide-in-from-right-4 duration-500">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ffffff20]" />
+                <input 
+                  type="text" 
+                  placeholder="Search purchasers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#ffffff05] border border-[#ffffff10] rounded-2xl py-3.5 pl-12 pr-6 text-xs font-body text-white placeholder-[#ffffff20] focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+                />
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -121,21 +158,124 @@ const Users: React.FC = () => {
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
               <p className="text-[#ffffff20] font-header tracking-[0.3em] text-[10px] uppercase italic">Indexing Global Registry...</p>
             </div>
+          ) : !searchQuery.trim() ? (
+            <div className="flex flex-col items-center justify-center py-32 space-y-8 text-center border border-white/5 bg-[#ffffff02] rounded-[40px] border-dashed px-4">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 mb-2 shadow-[0_0_50px_rgba(111,38,255,0.1)]">
+                <Search className="w-10 h-10 text-primary" />
+              </div>
+              <div className="max-w-xl w-full">
+                <h3 className="text-2xl font-header font-bold text-white italic uppercase mb-3">Identify a Purchaser</h3>
+                <p className="text-[#ffffff40] font-body text-sm px-8 mb-10">
+                  Enter the username, name, or email of the user you wish to invite to purchase your verified license.
+                </p>
+                
+                <div className="relative group max-w-md mx-auto">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-blue-500/50 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                  <div className="relative">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                    <input 
+                      type="text" 
+                      placeholder="Type name or @username..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                      className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-sm font-body text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-all shadow-2xl"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map(user => (
-                  <UserCard key={user.id} user={user} onInvite={handleInviteClick} />
+              {users.length > 0 ? (
+                users.map(user => (
+                  <UserCard key={user.id} user={user} onInvite={handleCardClick} />
                 ))
               ) : (
-                <div className="col-span-full py-32 text-center">
-                  <p className="text-[#ffffff20] font-header tracking-[0.2em] italic uppercase">No users matching your criteria</p>
+                <div className="col-span-full py-32 flex flex-col items-center justify-center space-y-6 text-center border border-white/5 bg-[#ffffff02] rounded-[40px] border-dashed">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10 mb-2">
+                    <X className="w-6 h-6 text-[#ffffff20]" />
+                  </div>
+                  <div className="max-w-xs">
+                    <p className="text-[#ffffff40] font-header tracking-[0.2em] italic uppercase text-xs mb-2">No users found</p>
+                    <p className="text-[#ffffff20] font-body text-[10px]">Adjust your search query to find the specific purchaser you're looking for.</p>
+                  </div>
                 </div>
               )}
             </div>
           )}
         </div>
       </main>
+
+      {/* User Detail Modal */}
+      {viewingUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md bg-black/60 animate-in fade-in duration-300">
+          <div className="bg-[#11111B] border border-white/10 w-full max-w-xl rounded-[40px] p-10 relative shadow-3xl overflow-hidden">
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            
+            <button 
+              onClick={() => setViewingUser(null)}
+              className="absolute top-8 right-8 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors z-10"
+            >
+              <X className="w-5 h-5 text-white/40" />
+            </button>
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-6 mb-10">
+                <div className="w-24 h-24 rounded-[32px] bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center shadow-2xl overflow-hidden p-1">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${viewingUser.username}`} 
+                    alt={viewingUser.username} 
+                    className="w-full h-full object-cover rounded-[28px]"
+                  />
+                </div>
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-[#00ff95]/10 border border-[#00ff95]/20 px-3 py-1 rounded-full mb-3">
+                    <CheckCircle2 className="w-3 h-3 text-[#00ff95]" />
+                    <span className="text-[8px] font-black text-[#00ff95] tracking-widest uppercase">Verified Identity</span>
+                  </div>
+                  <h2 className="text-3xl font-bold font-header text-white italic uppercase">{viewingUser.first_name} {viewingUser.last_name}</h2>
+                  <p className="text-primary font-mono text-xs">@{viewingUser.username}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+                  <p className="text-[10px] font-header text-white/20 uppercase tracking-widest mb-2">Wallet Address</p>
+                  <p className="text-xs font-mono text-white truncate">{viewingUser.wallet_address}</p>
+                </div>
+                <div className="bg-white/5 border border-white/5 rounded-2xl p-5">
+                  <p className="text-[10px] font-header text-white/20 uppercase tracking-widest mb-2">Joined Date</p>
+                  <p className="text-xs font-body text-white">
+                    {viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Alpha Cohort'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline" 
+                  fullWidth 
+                  className="!py-5 !text-[11px] font-black tracking-widest uppercase italic !rounded-2xl"
+                  onClick={() => setViewingUser(null)}
+                >
+                  Close Profile
+                </Button>
+                <Button 
+                  variant="primary" 
+                  fullWidth 
+                  className="!py-5 !text-[11px] font-black tracking-widest uppercase italic !rounded-2xl"
+                  onClick={() => handleInviteClick(viewingUser)}
+                  rightIcon={<ArrowRight className="w-4 h-4 ml-2" />}
+                >
+                  Invite to License
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invitation Modal */}
       {selectedUser && (

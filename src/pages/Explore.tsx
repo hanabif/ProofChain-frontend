@@ -4,7 +4,11 @@ import LicenseCard from '../components/dashboard/LicenseCard';
 import { useLicenseSearch } from '../hooks/licenses/useLicenseSearch';
 import { Button } from '../components/ui/Button';
 
-const Explore: React.FC = () => {
+interface ExploreProps {
+  isDashboard?: boolean;
+}
+
+const Explore: React.FC<ExploreProps> = ({ isDashboard = false }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [filters] = useState({
@@ -32,17 +36,27 @@ const Explore: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B14] text-white pt-40 pb-32 px-6 md:px-12 lg:px-24 relative overflow-hidden">
+    <div className={`min-h-screen text-white relative overflow-hidden ${
+      isDashboard ? 'p-8 lg:p-12' : 'bg-[#0B0B14] pt-40 pb-32 px-6 md:px-12 lg:px-24'
+    }`}>
       
-      {/* GLOBAL BACKGROUND HEX GRID overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-0">
-        <div className="absolute inset-0 bg-[url('/assets/images/Group.svg')] bg-cover" />
-      </div>
+      {/* GLOBAL BACKGROUND HEX GRID overlay - Only show on public page */}
+      {!isDashboard && (
+        <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-0">
+          <div className="absolute inset-0 bg-[url('/assets/images/Group.svg')] bg-cover" />
+        </div>
+      )}
 
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-16 relative z-10">
+      <div className={`flex flex-col md:flex-row md:items-start justify-between gap-8 relative z-10 ${
+        isDashboard ? 'mb-12' : 'mb-16'
+      }`}>
         <div>
-          <h1 className="text-5xl md:text-6xl font-header font-black text-white mb-6 tracking-tighter uppercase italic">Explore</h1>
+          <h1 className={`${
+            isDashboard ? 'text-4xl md:text-5xl' : 'text-5xl md:text-6xl'
+          } font-header font-black text-white mb-6 tracking-tighter uppercase italic`}>
+            Explore
+          </h1>
           <p className="text-slate-400 font-body text-sm max-w-lg leading-relaxed font-light italic">
             Discover verified digital licenses for high-value assets. Secure your intellectual property on the immutable ledger.
           </p>
@@ -58,7 +72,9 @@ const Explore: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col lg:flex-row items-center gap-6 mb-16 w-full relative z-10">
+      <div className={`flex flex-col lg:flex-row items-center gap-6 w-full relative z-10 ${
+        isDashboard ? 'mb-12' : 'mb-16'
+      }`}>
         {/* Search Input */}
         <form onSubmit={handleSearch} className="relative flex-grow w-full lg:w-auto">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5 pointer-events-none" />
@@ -132,10 +148,12 @@ const Explore: React.FC = () => {
         </div>
       )}
 
-      {/* Decorative dashed circle from bottom right */}
-      <div className="fixed bottom-[-200px] right-[-200px] w-[500px] h-[500px] pointer-events-none opacity-20 -z-0">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-full h-full border border-dashed border-slate-500 rounded-full" />
-      </div>
+      {/* Decorative dashed circle from bottom right - Only on public page */}
+      {!isDashboard && (
+        <div className="fixed bottom-[-200px] right-[-200px] w-[500px] h-[500px] pointer-events-none opacity-20 -z-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-full h-full border border-dashed border-slate-500 rounded-full" />
+        </div>
+      )}
     </div>
   );
 };

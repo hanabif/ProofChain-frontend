@@ -13,6 +13,7 @@ import { useRequestStore } from '../../store/requestStore';
 import { useAuthStore } from '../../store/authStore';
 import { getRequests, approveRequest, declineRequest, cancelRequest } from '../../services/requestService';
 import { toast } from '../../components/ui/Toast';
+import { webSocketService } from '../../services/websocketService';
 
 type TabType = 'RECEIVED' | 'SENT';
 
@@ -59,7 +60,7 @@ const Requests: React.FC = () => {
       await approveRequest(requestId);
       updateRequestStatus(requestId, 'approved');
       toast.success('Request approved successfully.');
-      // Optional: webSocketService.send('accept_request', { request_id: requestId });
+      webSocketService.send('accept_request', { request_id: requestId });
     } catch (err) {
       toast.error('Failed to approve request.');
     }
@@ -70,6 +71,7 @@ const Requests: React.FC = () => {
       await declineRequest(requestId);
       updateRequestStatus(requestId, 'declined');
       toast.success('Request declined.');
+      webSocketService.send('reject_request', { request_id: requestId });
     } catch (err) {
       toast.error('Failed to decline request.');
     }
@@ -80,6 +82,7 @@ const Requests: React.FC = () => {
       await cancelRequest(requestId);
       updateRequestStatus(requestId, 'cancelled');
       toast.success('Request cancelled.');
+      webSocketService.send('cancel_request', { request_id: requestId });
     } catch (err) {
       toast.error('Failed to cancel request.');
     }

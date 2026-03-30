@@ -31,7 +31,11 @@ export function useLogin(): UseLoginReturn {
     try {
       const { access, refresh, user } = await login(payload);
       setAuth(user, access, refresh);
-      navigate('/dashboard');
+      
+      // Handle redirection after login
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirect') || '/dashboard';
+      navigate(redirectTo);
     } catch (err) {
       setError(parseError(err));
     } finally {
