@@ -6,13 +6,13 @@ import OperationsTerminal from '../../components/dashboard/OperationsTerminal';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import licenseIcon from '../../assets/icons/License.svg';
 import { useLicenses } from '../../hooks/licenses/useLicenses';
-import { useTransactions } from '../../hooks/transactions/useTransactions';
+import { useWalletBalance } from '../../hooks/auth';
 
 const DashboardOverview: React.FC = () => {
   const { data: licenses } = useLicenses();
-  const { data: transactions } = useTransactions();
+  const { data: walletBalance } = useWalletBalance();
 
-  const totalEarnings = transactions?.reduce((acc, tx) => acc + Number(tx.amount || 0), 0) || 0;
+  const balanceXlm = walletBalance?.balance_xlm ? Number(walletBalance.balance_xlm).toFixed(2) : "0.00";
   return (
     <div className="flex min-h-screen bg-[#0a0a0f] text-white overflow-hidden selection:bg-primary/30">
       {/* Background Glow Decorations */}
@@ -52,8 +52,8 @@ const DashboardOverview: React.FC = () => {
               />
               <StatCard 
                 icon={licenseIcon} 
-                label="TOTAL EARNINGS" 
-                value={`${totalEarnings.toFixed(2)} ETH`} 
+                label="WALLET BALANCE" 
+                value={`${balanceXlm} XLM`} 
                 iconBgColor="green-400"
               />
             </div>

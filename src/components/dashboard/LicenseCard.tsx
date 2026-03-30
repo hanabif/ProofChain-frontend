@@ -7,6 +7,7 @@ import LicenseRequestModal from './LicenseRequestModal';
 interface LicenseCardProps extends License {
   onViewRequests?: () => void;
   isPublic?: boolean;
+  isDashboard?: boolean;
 }
 
 import { useAuthStore } from '../../store/authStore';
@@ -20,6 +21,7 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
   assets = [],
   requestCount = 0,
   isPublic = false,
+  isDashboard = false,
   owner,
 }) => {
   const displayPrice = !price || price === '0' || price === 0 ? 'FREE' : `${price} ETH`;
@@ -97,7 +99,7 @@ const LicenseCard: React.FC<LicenseCardProps> = ({
               fullWidth 
               className="!rounded-2xl !py-3.5 !text-[10px] !bg-[#ffffff05] hover:!bg-[#ffffff0a] border-[#ffffff10]" 
               clipped={false}
-              onClick={() => navigate(`/file/${id}`)}
+              onClick={() => navigate(isDashboard ? `/dashboard/asset/${id}` : `/file/${id}`)}
             >
               View Details
             </Button>

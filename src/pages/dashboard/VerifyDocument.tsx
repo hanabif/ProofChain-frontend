@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import VerificationModal from '../../components/dashboard/VerificationModal';
 import { verifyAsset } from '../../api/endpoints/assets.api';
+import { useActivityStore } from '../../store/activityStore';
 
 const VerifyDocument: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +17,7 @@ const VerifyDocument: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addActivity } = useActivityStore();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,6 +57,15 @@ const VerifyDocument: React.FC = () => {
       
       setVerificationData(result);
       setStatus(result.status === 'verified' ? 'success' : 'failure');
+      
+      if (result.status === 'verified') {
+        addActivity({
+          type: 'verification',
+          title: `Verification successful: ${selectedFile.name}`,
+          subtitle: `GLOBAL CONSENSUS: 99.8%`,
+        });
+      }
+      
       setIsModalOpen(true);
     } catch (error) {
       console.error('Verification failed:', error);

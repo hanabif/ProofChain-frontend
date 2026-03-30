@@ -1,5 +1,6 @@
 import { useAuthStore } from '../store/authStore';
 import { useRequestStore } from '../store/requestStore';
+import { useActivityStore } from '../store/activityStore';
 import { toast } from '../components/ui/Toast';
 
 class WebSocketService {
@@ -71,6 +72,11 @@ class WebSocketService {
     switch (event) {
       case 'new_transaction_request':
         store.addIncomingRequest(data);
+        useActivityStore.getState().addActivity({
+          type: 'request_received',
+          title: `New licensing request received`,
+          subtitle: `FROM: ${data.requesterName}`,
+        });
         toast.info(`New request from ${data.requesterName}`);
         break;
 

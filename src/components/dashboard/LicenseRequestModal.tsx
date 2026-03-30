@@ -7,6 +7,7 @@ import { createRequest } from '../../services/requestService';
 import { webSocketService } from '../../services/websocketService';
 import { useAuthStore } from '../../store/authStore';
 import { useRequestStore } from '../../store/requestStore';
+import { useActivityStore } from '../../store/activityStore';
 
 interface LicenseRequestModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ const LicenseRequestModal: React.FC<LicenseRequestModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user: currentUser } = useAuthStore();
   const { addOutgoingRequest } = useRequestStore();
+  const { addActivity } = useActivityStore();
 
   if (!license) return null;
 
@@ -74,6 +76,12 @@ const LicenseRequestModal: React.FC<LicenseRequestModalProps> = ({
           asset_title: license.title,
           requester_id: currentUser.id
         }
+      });
+
+      addActivity({
+        type: 'request_sent',
+        title: `License requested: ${license.title}`,
+        subtitle: `OWNER: ${license.owner?.username || 'Unknown'}`,
       });
 
       toast.success('Licensing inquiry transmitted successfully across the ledger.');

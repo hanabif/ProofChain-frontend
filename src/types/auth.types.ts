@@ -13,6 +13,13 @@ export interface User {
   updated_at?: string;
 }
 
+export interface WalletBalance {
+  wallet_address: string;
+  balance_xlm: string;
+  has_funds: boolean;
+  horizon_available: boolean;
+}
+
 // ─── Token Response (login / register / google callback) ──────────────────────
 
 export interface AuthTokenResponse {
