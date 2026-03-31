@@ -3,7 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Send, Loader2, Shield } from 'lucide-react';
 import { toast } from '../ui/Toast';
-import { createRequest } from '../../services/requestService';
+// Removed createRequest api call since it is websocket driven
 import { webSocketService } from '../../services/websocketService';
 import { useAuthStore } from '../../store/authStore';
 import { useRequestStore } from '../../store/requestStore';
@@ -49,33 +49,41 @@ const LicenseRequestModal: React.FC<LicenseRequestModalProps> = ({
       return;
     }
 
+    console.log('[DEBUG Modal] 🚀 Form Submitted. Processing...');
     setIsSubmitting(true);
     try {
-      // 1. Create request in database/mock-server
-      const requestData = {
+      console.log('[DEBUG Modal] 📡 Transmitting via WebSocket...');
+      
+      // Send real-time notification via WebSocket
+      const sent = webSocketService.send('create_request', {
+        license_id: license.id,
+        target_user_id: license.owner?.id || 'unknown-id',
+        type: 'EXCLUSIVE',
+        message: message.trim()
+      });
+
+      if (!sent) {
+        console.warn('[DEBUG Modal] ⚠️ WebSocket send failed (Socket not open). aborting UI update.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('[DEBUG Modal] 💾 Updating local store optimistically...');
+      // Optimistically add to outgoing store so the UI updates
+      addOutgoingRequest({
+        id: 'temp-' + Date.now(),
         senderId: currentUser.id,
         receiverId: license.owner?.id || 'unknown-id',
-        licenseId: license.id,
         assetId: license.assets?.[0]?.id || 'unknown-asset-id',
+        licenseId: license.id,
         requesterName: `${currentUser.first_name} ${currentUser.last_name}`.trim() || currentUser.username,
-        requesterEmail: currentUser.email,
+        requesterEmail: currentUser.email || '',
         receiverName: license.owner?.username || 'License Owner',
         receiverEmail: license.owner?.email || '',
         message: message.trim(),
-        type: 'INQUIRY' as const,
-      };
-
-      const newRequest = await createRequest(requestData);
-      addOutgoingRequest(newRequest);
-
-      // 2. Send real-time notification via WebSocket
-      webSocketService.send('request_license', {
-        license_id: license.id,
-        message: message.trim(),
-        metadata: {
-          asset_title: license.title,
-          requester_id: currentUser.id
-        }
+        type: 'EXCLUSIVE',
+        status: 'pending',
+        createdAt: new Date().toISOString()
       });
 
       addActivity({
@@ -84,12 +92,13 @@ const LicenseRequestModal: React.FC<LicenseRequestModalProps> = ({
         subtitle: `OWNER: ${license.owner?.username || 'Unknown'}`,
       });
 
-      toast.success('Licensing inquiry transmitted successfully across the ledger.');
+      console.log('[DEBUG Modal] ✅ Success. Cleaning up UI.');
+      toast.success('Licensing inquiry transmitted successfully!');
       setMessage('');
       onClose();
     } catch (error) {
-      console.error('Request failed:', error);
-      toast.error('Communication protocol failed. Please try again.');
+      console.error('[DEBUG Modal] ❌ submission error:', error);
+      toast.error('Failed to send request. Check your connection.');
     } finally {
       setIsSubmitting(false);
     }

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useRequestStore } from '../../store/requestStore';
 import { useAuthStore } from '../../store/authStore';
-import { getRequests, approveRequest, declineRequest, cancelRequest } from '../../services/requestService';
+import { getRequests } from '../../services/requestService';
 import { toast } from '../../components/ui/Toast';
 import { webSocketService } from '../../services/websocketService';
 
@@ -57,7 +57,6 @@ const Requests: React.FC = () => {
 
   const handleApprove = async (requestId: string) => {
     try {
-      await approveRequest(requestId);
       updateRequestStatus(requestId, 'approved');
       toast.success('Request approved successfully.');
       webSocketService.send('accept_request', { request_id: requestId });
@@ -68,7 +67,6 @@ const Requests: React.FC = () => {
 
   const handleDecline = async (requestId: string) => {
     try {
-      await declineRequest(requestId);
       updateRequestStatus(requestId, 'declined');
       toast.success('Request declined.');
       webSocketService.send('reject_request', { request_id: requestId });
@@ -79,7 +77,6 @@ const Requests: React.FC = () => {
 
   const handleCancel = async (requestId: string) => {
     try {
-      await cancelRequest(requestId);
       updateRequestStatus(requestId, 'cancelled');
       toast.success('Request cancelled.');
       webSocketService.send('cancel_request', { request_id: requestId });

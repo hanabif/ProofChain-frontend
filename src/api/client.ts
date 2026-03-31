@@ -4,22 +4,25 @@ import { useAuthStore } from "../store/authStore";
 // Public instance (no authorization header)
 export const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
 });
 
 // Authenticated instance
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
+  
+  console.log(`[DEBUG Axios] 👉 Starting Request to ${config.baseURL}${config.url}`);
   
   // Attach token if present and it's not a login/register request
   if (token && config.headers && !config.url?.includes('/auth/')) {
     config.headers.Authorization = `Bearer ${token}`; 
   }
   
+  console.log(`[DEBUG Axios] 👉 Headers attached:`, config.headers);
+  console.log(`[DEBUG Axios] 👉 withCredentials enabled?`, config.withCredentials === true);
+
   return config;
 });
