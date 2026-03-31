@@ -40,6 +40,14 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('token');
         localStorage.removeItem('refresh_token');
         set({ user: null, token: null, refreshToken: null });
+        
+        // Retain only the most recent 3 activities on logout
+        import('./activityStore').then(({ useActivityStore }) => {
+           const { activities } = useActivityStore.getState();
+           if (activities.length > 3) {
+             useActivityStore.setState({ activities: activities.slice(0, 3) });
+           }
+        });
       },
     }),
     {

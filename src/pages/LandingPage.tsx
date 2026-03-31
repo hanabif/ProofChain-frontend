@@ -226,7 +226,7 @@ const LandingPage: React.FC = () => {
             <div className="bg-[#11111B]/80 backdrop-blur-[50px] border border-white/20 p-12 flex flex-col items-center group transition-all duration-500 hover:bg-[#11111B]/95 shadow-2xl"
                  style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0% 100%)' }}>
                <h3 className="text-2xl font-header font-bold text-white mb-4 tracking-[0.3em]">FREE</h3>
-               <div className="text-4xl font-header font-black text-primary mb-12 tracking-tighter">0 ETH/year</div>
+               <div className="text-4xl font-header font-black text-primary mb-12 tracking-tighter">0 Br/year</div>
                <ul className="space-y-5 mb-12 w-full text-slate-400 text-sm font-body">
                   <li className="flex items-center gap-3"><div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_#6f26ff]" />Up to 5 files monthly</li>
                   <li className="flex items-center gap-3"><div className="w-2 h-2 bg-primary rounded-full" />Standard Verification</li>
@@ -239,7 +239,7 @@ const LandingPage: React.FC = () => {
                  style={{ clipPath: 'polygon(0% 40px, 40px 0%, 100% 0%, 100% 100%, 0% 100%)' }}>
                <div className="absolute top-0 right-0 p-2 bg-primary text-[10px] font-black uppercase tracking-widest text-white px-6 py-2 shadow-xl">Popular</div>
                <h3 className="text-2xl font-header font-bold text-white mb-4 tracking-[0.3em]">PRO</h3>
-               <div className="text-4xl font-header font-black text-white mb-12 tracking-tighter">1000 ETH/year</div>
+               <div className="text-4xl font-header font-black text-white mb-12 tracking-tighter">1000 Br/year</div>
                <ul className="space-y-5 mb-12 w-full text-slate-200 text-sm font-body">
                   <li className="flex items-center gap-3 font-semibold"><div className="w-2 h-2 bg-white rounded-full shadow-white" />Unlimited protections</li>
                   <li className="flex items-center gap-3"><div className="w-2 h-2 bg-white rounded-full" />Priority Hash Generation</li>

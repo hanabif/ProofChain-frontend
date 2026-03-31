@@ -33,20 +33,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
     { name: 'OVERVIEW', icon: overviewIcon, path: '/dashboard/overview' },
     { name: 'REQUESTS', icon: requestIcon, path: '/dashboard/requests' },
     { name: 'LICENSES', icon: licenseIcon, path: '/dashboard/licenses' },
-    { name: 'TRANSACTIONS', icon: transactionsIcon, path: '/dashboard/transactions' },
     { name: 'USERS', icon: '', lucideIcon: <Users className="w-6 h-6" />, path: '/dashboard/users' },
     { name: 'EXPLORE LICENSES', icon: '', lucideIcon: <Compass className="w-6 h-6" />, path: '/dashboard/explore' },
+    { name: 'TRANSACTIONS', icon: transactionsIcon, path: '/dashboard/transactions' },
     { name: 'SETTINGS', icon: settingsIcon, path: '/dashboard/settings' },
   ];
 
   return (
     <div 
-      className={`h-screen transition-all duration-300 flex flex-col bg-[#11111b] border-r border-[#ffffff10] sticky top-0 left-0 z-50 ${
+      className={`h-screen max-h-screen transition-all duration-300 flex flex-col bg-[#11111b] border-r border-[#ffffff10] sticky top-0 left-0 z-50 ${
         isCollapsed ? 'w-[80px]' : 'w-[260px]'
       }`}
     >
       {/* Logo Section */}
-      <div className="p-6 flex items-center gap-3 cursor-pointer" onClick={toggleSidebar}>
+      <div className="p-6 shrink-0 flex items-center gap-3 cursor-pointer" onClick={toggleSidebar}>
         <img src={logoIcon} alt="Logo" className="w-10 h-10 animate-pulse" />
         {!isCollapsed && (
           <span className="text-xl font-bold tracking-wider text-white font-header uppercase">
@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 mt-8 px-3 space-y-2">
+      <nav className="flex-1 mt-4 px-3 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-hide mb-4">
         {menuItems.map((item) => (
           <NavLink
             key={item.name}
