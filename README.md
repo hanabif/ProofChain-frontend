@@ -55,7 +55,7 @@ ProofChain empowers digital creators by providing a secure, immutable, and trans
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/ProofChain.git
+   git clone https://github.com/hanabif/ProofChain-frontend.git
    cd ProofChain/ProofChain-frontend
    ```
 
@@ -69,7 +69,8 @@ ProofChain empowers digital creators by providing a secure, immutable, and trans
 3. **Environment Setup**
    Create a `.env` file in the root of the frontend directory and configure your backend API URL:
    ```env
-   VITE_API_BASE_URL=http://your-backend-api-url
+   VITE_API_BASE_URL=https://proofchain-api.onrender.com
+   VITE_WS_URL=wss:///proofchain-api.onrender.com/ws/transactions/
    ```
 
 4. **Launch the development server**
