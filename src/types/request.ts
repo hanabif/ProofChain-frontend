@@ -1,5 +1,5 @@
 export type RequestStatus = "pending" | "approved" | "declined" | "cancelled";
-export type RequestType = "INQUIRY" | "INVITATION";
+export type RequestType = "INQUIRY" | "INVITATION" | "EXCLUSIVE" | "NON_EXCLUSIVE";
 
 export interface Request {
   id: string;

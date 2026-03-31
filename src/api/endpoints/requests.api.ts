@@ -48,6 +48,7 @@ export const getRequests = async (page = 1, pageSize = 10): Promise<PaginatedRes
 };
 
 export const createRequest = async (data: Partial<Request>): Promise<Request> => {
+  console.log('[DEBUG requests.api.ts] 1. Preparing createRequest payload with data:', data);
   // Map frontend fields back to backend if necessary
   const payload = {
     license: data.licenseId,
@@ -59,8 +60,18 @@ export const createRequest = async (data: Partial<Request>): Promise<Request> =>
     // Add other fields as per backend requirements
   };
   
-  const response = await api.post<any>('/api/transactions/requests/', payload);
-  return mapRequest(response.data);
+  console.log('[DEBUG requests.api.ts] 2. Mapped payload for backend:', payload);
+  try {
+    const response = await api.post<any>('/api/transactions/requests/', payload);
+    console.log('[DEBUG requests.api.ts] 3. Backend response received:', response.status, response.data);
+    return mapRequest(response.data);
+  } catch (error: any) {
+    console.error('[DEBUG requests.api.ts] 4. Failed POST to /api/transactions/requests/:', 
+      error.response?.data || error.message, 
+      error.response?.headers
+    );
+    throw error;
+  }
 };
 
 export const approveRequest = async (id: string): Promise<Request> => {
