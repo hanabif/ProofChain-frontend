@@ -6,8 +6,10 @@ import { Button } from '../../components/ui/Button';
 import { Search, Loader2, X, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getUsers, getUserById } from '../../services/userService';
 import { getLicenses } from '../../services/licenseService';
-import { createRequest } from '../../services/requestService';
+import { webSocketService } from '../../services/websocketService';
 import { useAuthStore } from '../../store/authStore';
+import { useRequestStore } from '../../store/requestStore';
+import { useActivityStore } from '../../store/activityStore';
 import { toast } from '../../components/ui/Toast';
 import type { User } from '../../types/auth.types';
 import type { License } from '../../types/license';
@@ -21,8 +23,11 @@ const Users: React.FC = () => {
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [, setLoadingDetails] = useState(false);
   const [selectedLicenseId, setSelectedLicenseId] = useState<string>('');
+  const [invitationMessage, setInvitationMessage] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const { user: currentUser } = useAuthStore();
+  const { addOutgoingRequest } = useRequestStore();
+  const { addActivity } = useActivityStore();
 
   useEffect(() => {
     const fetchLicenses = async () => {
@@ -87,6 +92,7 @@ const Users: React.FC = () => {
     if (licenses.length > 0) {
       setSelectedLicenseId(licenses[0].id);
     }
+    setInvitationMessage(`Owner ${currentUser?.username || 'User'} is inviting you to license their asset.`);
   };
 
   const handleSendInvitation = async () => {
@@ -95,20 +101,50 @@ const Users: React.FC = () => {
     setSubmitting(true);
     try {
       const license = licenses.find(l => l.id === selectedLicenseId);
-      await createRequest({
+      
+      console.log('[DEBUG Users] 📡 Transmitting invitation via WebSocket...');
+      
+      // Use WebSocket just like LicenseRequestModal.tsx
+      const sent = webSocketService.send('create_request', {
+        license_id: selectedLicenseId,
+        target_user_id: selectedUser.id,
+        type: 'EXCLUSIVE', // Invitation uses 'EXCLUSIVE' since Invitations and purchase requests are handled similarly
+        message: invitationMessage.trim(),
+      });
+
+      if (!sent) {
+        console.warn('[DEBUG Users] ⚠️ WebSocket send failed. aborting UI update.');
+        setSubmitting(false);
+        return;
+      }
+
+      console.log('[DEBUG Users] 💾 Updating local stores...');
+      // Optimistically add to outgoing store (similar to LicenseRequestModal)
+      addOutgoingRequest({
+        id: 'temp-' + Date.now(),
         senderId: currentUser.id,
         receiverId: selectedUser.id,
-        licenseId: selectedLicenseId,
         assetId: license?.assets[0]?.id || 'unknown',
+        licenseId: selectedLicenseId,
         requesterName: `${currentUser.first_name} ${currentUser.last_name}`.trim() || currentUser.username,
         requesterEmail: currentUser.email || '',
         receiverName: selectedUser.full_name || `${selectedUser.first_name} ${selectedUser.last_name}`.trim() || selectedUser.username,
         receiverEmail: selectedUser.email || '',
-        message: `Owner ${currentUser.username} is inviting you to license their asset.`,
-        type: 'INVITATION',
+        message: invitationMessage.trim(),
+        type: 'EXCLUSIVE',
+        status: 'pending',
+        createdAt: new Date().toISOString()
       });
+
+      addActivity({
+        type: 'request_sent',
+        title: `License invitation sent: ${license?.title || 'Unknown License'}`,
+        subtitle: `TARGET: ${selectedUser.username}`,
+      });
+
       toast.success(`Invitation transmitted to ${selectedUser.username}.`);
       setSelectedUser(null);
+      setInvitationMessage(''); // Reset message after success
     } catch (err) {
       console.error('Failed to send invitation', err);
       toast.error('Invitation transmission failed.');
@@ -328,6 +364,16 @@ const Users: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-3 mt-6">
+                <label className="text-[10px] font-header font-bold uppercase tracking-widest text-[#ffffff20] ml-1">Personal Message</label>
+                <textarea 
+                  value={invitationMessage}
+                  onChange={(e) => setInvitationMessage(e.target.value)}
+                  placeholder="Include a message with your invitation..."
+                  className="w-full bg-[#ffffff05] border border-[#ffffff10] rounded-2xl p-4 text-xs font-body text-white placeholder-white/10 min-h-[100px] focus:outline-none focus:border-primary/50 focus:bg-[#ffffff0a] transition-all resize-none shadow-inner"
+                />
               </div>
             </div>
 

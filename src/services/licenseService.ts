@@ -1,39 +1,35 @@
-import { delay } from "./api";
+import { api, publicApi } from "../api/client";
 import type { License } from "../types/license";
-import { mockLicenses } from "../mocks/licenses";
 
-let licenses = [...mockLicenses];
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
 
 export const getLicenses = async (): Promise<License[]> => {
-  await delay(800);
-  return licenses;
+  try {
+    const response = await api.get<PaginatedResponse<License>>('/api/assets/licenses/me');
+    return response.data.results;
+  } catch (error) {
+    console.error('Failed to fetch my licenses:', error);
+    return [];
+  }
 };
 
 export const createLicense = async (license: Omit<License, "id" | "assetCount" | "requestCount">): Promise<License> => {
-  await delay(1000);
-  const newLicense: License = {
-    ...license,
-    id: `l${licenses.length + 1}`,
-    assetCount: 0,
-    requestCount: 0,
-  };
-  licenses = [...licenses, newLicense];
-  return newLicense;
+  // Direct creation not used in this specific flow, but kept for interface completeness
+  const response = await api.post<License>('/api/assets/licenses', license);
+  return response.data;
 };
 
 export const updateLicense = async (id: string, updates: Partial<License>): Promise<License> => {
-  await delay(800);
-  const index = licenses.findIndex((l) => l.id === id);
-  if (index === -1) throw new Error("License not found");
-  
-  const updatedLicense = { ...licenses[index], ...updates };
-  licenses = licenses.map((l) => (l.id === id ? updatedLicense : l));
-  return updatedLicense;
+  const response = await api.patch<License>(`/api/assets/licenses/${id}`, updates);
+  return response.data;
 };
 
 export const getLicenseById = async (id: string): Promise<License> => {
-  await delay(500);
-  const license = licenses.find((l) => l.id === id);
-  if (!license) throw new Error("License not found");
-  return license;
+  const response = await publicApi.get<License>(`/api/assets/licenses/${id}`);
+  return response.data;
 };
