@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# ProofChain
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-Currently, two official plugins are available:
+> **Prove Ownership of Your Digital Work.** A decentralized platform to verify and protect your digital files using blockchain technology.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+ProofChain empowers digital creators by providing a secure, immutable, and transparent way to verify the authenticity and ownership of their digital assets.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
 
-## Expanding the ESLint configuration
+### 🔐 Immutable Verification
+- **Cryptographic Hashing**: Every file receives a unique fingerprint.
+- **Blockchain Anchoring**: Hashes are permanently recorded on an immutable ledger.
+- **Instant Proof**: Verify any file's authenticity in seconds.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 📜 Decentralized Licensing
+- **License Management**: Create and manage customizable licensing terms for your work.
+- **Automated Requests**: Seamlessly handle license requests within the platform.
+- **Monetization**: Clear pathways for creators to earn from their verified assets.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🖥️ Premium User Experience
+- **Interactive Dashboard**: Real-time overview of your assets, licenses, and recent activities.
+- **Advanced Explorer**: Functional filters and sorting for finding verified licenses.
+- **Operations Terminal**: A powerful, command-like interface for managing technical operations.
+- **Responsive & Modern Design**: A high-end dark mode interface featuring glassmorphism and smooth micro-animations.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Tech Stack
+
+- **Frontend Framework**: [React 19](https://react.dev/) (with TypeScript)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Data Fetching**: [TanStack Query (React Query)](https://tanstack.com/query/latest)
+- **HTTP Client**: [Axios](https://axios-http.com/)
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (LTS version recommended)
+- `npm` or `pnpm` (highly recommended)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ProofChain.git
+   cd ProofChain/ProofChain-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+
+3. **Environment Setup**
+   Create a `.env` file in the root of the frontend directory and configure your backend API URL:
+   ```env
+   VITE_API_BASE_URL=http://your-backend-api-url
+   ```
+
+4. **Launch the development server**
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📂 Project Structure
+
+```bash
+src/
+├── api/          # API client and endpoint definitions
+├── assets/       # Static assets like images and icons
+├── components/   # Reusable UI components (layout, dashboard, ui)
+├── features/     # Feature-specific logic and components
+├── hooks/        # Custom React hooks (auth, licenses, etc.)
+├── layouts/      # Page layouts (MainLayout, AuthLayout)
+├── mocks/        # Mock data for offline development/prototyping
+├── pages/        # Individual page components
+├── services/     # Business logic and external service interaction
+├── store/        # Zustand state management stores
+├── types/        # TypeScript type and interface definitions
+└── utils/        # Generic utility functions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📄 License
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+<p align="center">Built with ❤️ for Digital Creators.</p>
